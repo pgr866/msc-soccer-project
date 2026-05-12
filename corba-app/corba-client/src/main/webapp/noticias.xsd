@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+	<xs:element name="noticias">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="noticia">
+					<xs:complexType>
+						<xs:sequence>
+							<xs:element name="fecha">
+								<xs:simpleType>
+									<xs:restriction base="xs:string">
+										<xs:pattern value="\d{2}/\d{2}/\d{4}" />
+									</xs:restriction>
+								</xs:simpleType>
+							</xs:element>
+							<xs:element name="titulo">
+								<xs:simpleType>
+									<xs:restriction base="xs:string">
+										<xs:pattern value="(\S\s*){5,30}" />
+									</xs:restriction>
+								</xs:simpleType>
+							</xs:element>
+							<xs:element name="descripcion">
+								<xs:simpleType>
+									<xs:restriction base="xs:string">
+										<xs:pattern value="(\S\s*){20,250}" />
+									</xs:restriction>
+								</xs:simpleType>
+							</xs:element>
+							<xs:element name="interes">
+								<xs:simpleType>
+									<xs:restriction base="xs:string">
+										<xs:enumeration value="alto" />
+										<xs:enumeration value="medio" />
+										<xs:enumeration value="bajo" />
+									</xs:restriction>
+								</xs:simpleType>
+							</xs:element>
+							<xs:element name="etiquetas">
+								<xs:complexType>
+									<xs:sequence>
+										<xs:element name="etiqueta"
+											minOccurs="1" maxOccurs="6">
+											<xs:simpleType>
+												<xs:restriction base="xs:string">
+													<xs:pattern
+														value="#[a-zA-Z0-9]+" />
+												</xs:restriction>
+											</xs:simpleType>
+										</xs:element>
+									</xs:sequence>
+								</xs:complexType>
+							</xs:element>
+						</xs:sequence>
+					</xs:complexType>
+				</xs:element>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+</xs:schema>

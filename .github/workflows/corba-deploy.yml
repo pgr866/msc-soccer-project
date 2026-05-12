@@ -1,0 +1,56 @@
+name: CD CORBA
+
+on:
+  workflow_run:
+    workflows: ["CI CORBA"]
+    types:
+      - completed
+  workflow_dispatch:
+
+env:
+  GCP_PROJECT: "cnsa2026-pgr866"
+  REPO_NAME: "docker-repo"
+  REPO_LOCATION: "us-east1"
+  IMAGE_NAME: "corba-app"
+  CLIENT_CORBA_PORT: 8080
+  ORB_CORBA_PORT: 1050
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    if: >
+      github.event.workflow_run.conclusion == 'success' && 
+      github.event.workflow_run.event == 'push'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Configure Docker for GCP
+        run: gcloud auth configure-docker ${{ env.REPO_LOCATION }}-docker.pkg.dev --quiet
+
+      - name: Build and Push Image
+        run: |
+            IMAGE_PATH="${{ env.REPO_LOCATION }}-docker.pkg.dev/${{ env.GCP_PROJECT }}/${{ env.REPO_NAME }}/${{ env.IMAGE_NAME }}"
+            docker build -t $IMAGE_PATH:${{ github.sha }} -f corba-app/Dockerfile corba-app
+            docker tag $IMAGE_PATH:${{ github.sha }} $IMAGE_PATH:latest
+            docker push $IMAGE_PATH:${{ github.sha }}
+            docker push $IMAGE_PATH:latest
+
+      - name: Deploy to Cloud Run
+        uses: google-github-actions/deploy-cloudrun@v3
+        with:
+          service: ${{ env.IMAGE_NAME }}
+          image: ${{ env.REPO_LOCATION }}-docker.pkg.dev/${{ env.GCP_PROJECT }}/${{ env.REPO_NAME }}/${{ env.IMAGE_NAME }}:latest
+          region: ${{ env.REPO_LOCATION }}
+          env_vars: |
+            CLIENT_CORBA_PORT=${{ env.CLIENT_CORBA_PORT }}
+            ORB_CORBA_PORT=${{ env.ORB_CORBA_PORT }}
+          flags: >
+            --port=${{ env.CLIENT_CORBA_PORT }}
+            --allow-unauthenticated

@@ -1,0 +1,10 @@
+services:
+  corba-app:
+    build: corba-app
+    container_name: corba-app
+    restart: always
+    ports:
+      - "${CLIENT_CORBA_PORT}:${CLIENT_CORBA_PORT}"
+    environment:
+      - CLIENT_CORBA_PORT
+      - ORB_CORBA_PORT

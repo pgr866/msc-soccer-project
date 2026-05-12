@@ -1,0 +1,24 @@
+name: Test Report CORBA
+
+on:
+  workflow_run:
+    workflows: ['CI CORBA']
+    types:
+      - completed
+  workflow_dispatch:
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    permissions:
+      checks: write
+      pull-requests: write
+      contents: read
+
+    steps:
+      - uses: dorny/test-reporter@v3
+        with:
+          artifact: test-results
+          name: JUnit Tests
+          path: "**/target/surefire-reports/TEST-*.xml"
+          reporter: java-junit
