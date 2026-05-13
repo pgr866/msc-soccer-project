@@ -3,8 +3,8 @@ WORKDIR /app
 COPY Buffer.idl .
 COPY corba-server/ ./corba-server/
 COPY corba-client/ ./corba-client/
-RUN mvn -f corba-server/pom.xml package -DskipTests -B -Dhttps.protocols=TLSv1.2 && \
-    mvn -f corba-client/pom.xml package -DskipTests -B -Dhttps.protocols=TLSv1.2
+RUN mvn -f corba-server/pom.xml clean package -DskipTests -B -Dhttps.protocols=TLSv1.2 && \
+    mvn -f corba-client/pom.xml clean package -DskipTests -B -Dhttps.protocols=TLSv1.2
 
 FROM tomcat:9.0.20-jre8-alpine
 WORKDIR /usr/local/tomcat
