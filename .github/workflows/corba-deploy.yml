@@ -5,6 +5,8 @@ on:
     workflows: ["CI CORBA"]
     types:
       - completed
+    branches:
+      - main
   workflow_dispatch:
 
 env:
@@ -18,9 +20,7 @@ env:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    if: >
-      github.event.workflow_run.conclusion == 'success' && 
-      github.event.workflow_run.event == 'push'
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
 
     steps:
       - name: Checkout code
