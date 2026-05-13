@@ -5,11 +5,12 @@ on:
     branches: [ main ]
     paths:
       - 'corba-app/**'
-      - '.github/workflows/corba-build.yml'
+      - '.github/workflows/corba-*.yml'
   pull_request:
     branches: [ main ]
     paths:
       - 'corba-app/**'
+      - '.github/workflows/corba-*.yml'
   workflow_dispatch:
 
 jobs:
