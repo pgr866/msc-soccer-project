@@ -1,10 +1,6 @@
 name: CD CORBA
 
 on:
-  workflow_run:
-    workflows: ["CI CORBA"]
-    types:
-      - completed
   workflow_dispatch:
 
 env:
@@ -18,9 +14,6 @@ env:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    if: >
-      github.event.workflow_run.conclusion == 'success' && 
-      github.event.workflow_run.event == 'push'
 
     steps:
       - name: Checkout code

@@ -31,10 +31,10 @@ jobs:
           cache: maven
 
       - name: Build corba-server
-        run: mvn -B -f corba-app/corba-server/pom.xml verify
+        run: mvn -B -f corba-app/corba-server/pom.xml clean verify
 
       - name: Build corba-client
-        run: mvn -B -f corba-app/corba-client/pom.xml verify
+        run: mvn -B -f corba-app/corba-client/pom.xml clean verify
 
       - name: Upload Test Results
         uses: actions/upload-artifact@v7
@@ -63,3 +63,9 @@ jobs:
           checkstyle_config: google_checks.xml
           level: warning
           reporter: github-check
+
+      - name: Trigger CD Workflow
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && success()
+        run: gh workflow run deploy.yml
+        env:
+          GH_TOKEN: ${{ github.token }}
