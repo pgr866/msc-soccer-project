@@ -1,0 +1,340 @@
+name: CD Spring Microservices
+
+on:
+  workflow_run:
+    workflows: ['CI Spring Microservices']
+    branches: [main]
+    types: [completed]
+  workflow_dispatch:
+
+env:
+  GCP_PROJECT: "cnsa2026-pgr866"
+  GCP_PROJECT_NUMBER: "454162328788"
+  REGION: "us-east1"
+  REPO_NAME: "docker-repo"
+  VPC_NAME: "microservices-vpc"
+  SUBNET_NAME: "microservices-subnet"
+  ROUTER_NAME: "microservices-router"
+  NAT_NAME: "microservices-nat"
+  CONFIG_REPO_URL: "https://github.com/pgr866/msc-soccer-project-config"
+  SB_DB_HOST: "aws-0-eu-west-3.pooler.supabase.com"
+  SB_DB_PORT: "6543"
+  SB_DB_NAME: "postgres"
+
+jobs:
+  init-infra:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Create VPC Network, Subnetwork, Cloud Router and Cloud NAT
+        run: |
+          if ! gcloud compute networks describe ${{ env.VPC_NAME }} --project=${{ env.GCP_PROJECT }} >/dev/null 2>&1; then
+            gcloud compute networks create ${{ env.VPC_NAME }} --project=${{ env.GCP_PROJECT }} --subnet-mode=custom
+          fi
+          if ! gcloud compute networks subnets describe ${{ env.SUBNET_NAME }} --region=${{ env.REGION }} --project=${{ env.GCP_PROJECT }} >/dev/null 2>&1; then
+            gcloud compute networks subnets create ${{ env.SUBNET_NAME }} --project=${{ env.GCP_PROJECT }} --network=${{ env.VPC_NAME }} --region=${{ env.REGION }} --range=10.0.0.0/24 --enable-private-ip-google-access
+          fi
+          if ! gcloud compute routers describe ${{ env.ROUTER_NAME }} --region=${{ env.REGION }} --project=${{ env.GCP_PROJECT }} >/dev/null 2>&1; then
+            gcloud compute routers create ${{ env.ROUTER_NAME }} --project=${{ env.GCP_PROJECT }} --network=${{ env.VPC_NAME }} --region=${{ env.REGION }}
+          fi
+          if ! gcloud compute routers nats describe ${{ env.NAT_NAME }} --router=${{ env.ROUTER_NAME }} --region=${{ env.REGION }} --project=${{ env.GCP_PROJECT }} >/dev/null 2>&1; then
+            gcloud compute routers nats create ${{ env.NAT_NAME }} --project=${{ env.GCP_PROJECT }} --router=${{ env.ROUTER_NAME }} --region=${{ env.REGION }} --auto-allocate-nat-external-ips --nat-all-subnet-ip-ranges
+          fi
+
+  config-server:
+    needs: init-infra
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Configure Docker for GCP
+        run: gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
+
+      - name: Build and Push
+        run: |
+          REPO_URL="${{ env.REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT }}/${{ env.REPO_NAME }}"
+          docker build -t $REPO_URL/config-server:${{ github.sha }} -t $REPO_URL/config-server:latest -f config-server/Dockerfile config-server
+          docker push -a $REPO_URL/config-server
+
+      - name: Deploy to Cloud Run
+        uses: google-github-actions/deploy-cloudrun@v3
+        with:
+          service: config-server
+          image: ${{ env.REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT }}/${{ env.REPO_NAME }}/config-server:latest
+          region: ${{ env.REGION }}
+          env_vars: "CONFIG_REPO_URL=${{ env.CONFIG_REPO_URL }}"
+          flags: |
+            --port=8888
+            --ingress=internal
+            --allow-unauthenticated
+            --network=${{ env.VPC_NAME }}
+            --subnet=${{ env.SUBNET_NAME }}
+            --vpc-egress=all-traffic
+
+  eureka-server:
+    needs: [init-infra, config-server]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Configure Docker for GCP
+        run: gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
+
+      - name: Build and Push
+        run: |
+          REPO_URL="${{ env.REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT }}/${{ env.REPO_NAME }}"
+          docker build -t $REPO_URL/eureka-server:${{ github.sha }} -t $REPO_URL/eureka-server:latest -f eureka-server/Dockerfile eureka-server
+          docker push -a $REPO_URL/eureka-server
+
+      - name: Deploy to Cloud Run
+        uses: google-github-actions/deploy-cloudrun@v3
+        with:
+          service: eureka-server
+          image: ${{ env.REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT }}/${{ env.REPO_NAME }}/eureka-server:latest
+          region: ${{ env.REGION }}
+          env_vars: "CONFIG_SERVER_URL=https://config-server-${{ env.GCP_PROJECT_NUMBER }}.${{ env.REGION }}.run.app"
+          flags: |
+            --port=8761
+            --ingress=internal
+            --allow-unauthenticated
+            --network=${{ env.VPC_NAME }}
+            --subnet=${{ env.SUBNET_NAME }}
+            --vpc-egress=all-traffic
+      
+      - name: Deploy eureka-proxy to Cloud Run
+        uses: google-github-actions/deploy-cloudrun@v3
+        with:
+          service: "eureka-proxy"
+          image: "nginx:alpine"
+          region: ${{ env.REGION }}
+          flags: |
+            --port=8080
+            --ingress=all
+            --allow-unauthenticated
+            --network=${{ env.VPC_NAME }}
+            --subnet=${{ env.SUBNET_NAME }}
+            --vpc-egress=all-traffic
+            --iap
+            "--args=/bin/sh,-c,mkdir -p /etc/nginx/templates && echo 'server { listen $PORT; resolver 8.8.8.8; location / { set $b https://eureka-server-${{ env.GCP_PROJECT_NUMBER }}.${{ env.REGION }}.run.app; proxy_pass $b; proxy_set_header Host $proxy_host; } }' > /etc/nginx/templates/default.conf.template && exec /docker-entrypoint.sh nginx -g 'daemon off;'"
+
+      - name: Grant Owner Access to IAP
+        run: |
+          gcloud iap web add-iam-policy-binding \
+              --resource-type=cloud-run \
+              --service=eureka-proxy \
+              --region=${{ env.REGION }} \
+              --member="$(gcloud projects get-iam-policy ${{ env.GCP_PROJECT }} --flatten="bindings" --filter="bindings.role=roles/owner" --format="value(bindings.members[])")" \
+              --role="roles/iap.httpsResourceAccessor" \
+              --project=${{ env.GCP_PROJECT }}
+
+  gateway:
+    needs: [init-infra, config-server, eureka-server]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Configure Docker for GCP
+        run: gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
+
+      - name: Build and Push
+        run: |
+          REPO_URL="${{ env.REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT }}/${{ env.REPO_NAME }}"
+          docker build -t $REPO_URL/gateway:${{ github.sha }} -t $REPO_URL/gateway:latest -f gateway/Dockerfile gateway
+          docker push -a $REPO_URL/gateway
+      
+      - name: Encode Firebase Account Service JSON Key
+        id: encode_key
+        run: |
+          ENCODED=$(echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}' | base64 -w 0)
+          echo "::add-mask::$ENCODED"
+          echo "FIREBASE_SERVICE_ACCOUNT_B64=$ENCODED" >> $GITHUB_OUTPUT
+
+      - name: Deploy to Cloud Run
+        uses: google-github-actions/deploy-cloudrun@v3
+        with:
+          service: gateway
+          image: ${{ env.REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT }}/${{ env.REPO_NAME }}/gateway:latest
+          region: ${{ env.REGION }}
+          env_vars: |
+            SPRING_PROFILES_ACTIVE=prod
+            FIREBASE_SERVICE_ACCOUNT_B64=${{ steps.encode_key.outputs.FIREBASE_SERVICE_ACCOUNT_B64 }}
+            GCP_PROJECT_NUMBER=${{ env.GCP_PROJECT_NUMBER }}
+            REGION=${{ env.REGION }}
+            SERVICE_HOSTNAME=gateway-${{ env.GCP_PROJECT_NUMBER }}.${{ env.REGION }}.run.app
+            CONFIG_SERVER_URL=https://config-server-${{ env.GCP_PROJECT_NUMBER }}.${{ env.REGION }}.run.app
+            EUREKA_SERVER_URL=https://eureka-server-${{ env.GCP_PROJECT_NUMBER }}.${{ env.REGION }}.run.app/eureka/
+            IONIC_APP_URL=https://ionic-app-${{ env.GCP_PROJECT_NUMBER }}.${{ env.REGION }}.run.app
+          flags: |
+            --port=8080
+            --ingress=all
+            --allow-unauthenticated
+            --network=${{ env.VPC_NAME }}
+            --subnet=${{ env.SUBNET_NAME }}
+            --vpc-egress=all-traffic
+
+  player-service:
+    needs: [init-infra, config-server, eureka-server]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Configure Docker for GCP
+        run: gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
+
+      - name: Build and Push
+        run: |
+          REPO_URL="${{ env.REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT }}/${{ env.REPO_NAME }}"
+          docker build -t $REPO_URL/player-service:${{ github.sha }} -t $REPO_URL/player-service:latest -f player-service/Dockerfile player-service
+          docker push -a $REPO_URL/player-service
+
+      - name: Deploy to Cloud Run
+        uses: google-github-actions/deploy-cloudrun@v3
+        with:
+          service: player-service
+          image: ${{ env.REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT }}/${{ env.REPO_NAME }}/player-service:latest
+          region: ${{ env.REGION }}
+          env_vars: |
+            SPRING_PROFILES_ACTIVE=prod
+            GCP_PROJECT_NUMBER=${{ env.GCP_PROJECT_NUMBER }}
+            REGION=${{ env.REGION }}
+            CONFIG_SERVER_URL=https://config-server-${{ env.GCP_PROJECT_NUMBER }}.${{ env.REGION }}.run.app
+            EUREKA_SERVER_URL=https://eureka-server-${{ env.GCP_PROJECT_NUMBER }}.${{ env.REGION }}.run.app/eureka/
+            SB_DB_HOST=${{ env.SB_DB_HOST }}
+            SB_DB_PORT=${{ env.SB_DB_PORT }}
+            SB_DB_NAME=${{ env.SB_DB_NAME }}
+            SB_DB_USER=${{ secrets.SB_DB_USER }}
+            SB_DB_PASSWORD=${{ secrets.SB_DB_PASSWORD }}
+          flags: |
+            --port=8081
+            --ingress=internal
+            --allow-unauthenticated
+            --min-instances=1
+            --network=${{ env.VPC_NAME }}
+            --subnet=${{ env.SUBNET_NAME }}
+            --vpc-egress=all-traffic
+
+  comment-service:
+    needs: [init-infra, config-server, eureka-server]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Configure Docker for GCP
+        run: gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
+
+      - name: Build and Push
+        run: |
+          REPO_URL="${{ env.REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT }}/${{ env.REPO_NAME }}"
+          docker build -t $REPO_URL/comment-service:${{ github.sha }} -t $REPO_URL/comment-service:latest -f comment-service/Dockerfile comment-service
+          docker push -a $REPO_URL/comment-service
+
+      - name: Deploy to Cloud Run
+        uses: google-github-actions/deploy-cloudrun@v3
+        with:
+          service: comment-service
+          image: ${{ env.REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT }}/${{ env.REPO_NAME }}/comment-service:latest
+          region: ${{ env.REGION }}
+          env_vars: |
+            SPRING_PROFILES_ACTIVE=prod
+            GCP_PROJECT_NUMBER=${{ env.GCP_PROJECT_NUMBER }}
+            REGION=${{ env.REGION }}
+            CONFIG_SERVER_URL=https://config-server-${{ env.GCP_PROJECT_NUMBER }}.${{ env.REGION }}.run.app
+            EUREKA_SERVER_URL=https://eureka-server-${{ env.GCP_PROJECT_NUMBER }}.${{ env.REGION }}.run.app/eureka/
+            SB_DB_HOST=${{ env.SB_DB_HOST }}
+            SB_DB_PORT=${{ env.SB_DB_PORT }}
+            SB_DB_NAME=${{ env.SB_DB_NAME }}
+            SB_DB_USER=${{ secrets.SB_DB_USER }}
+            SB_DB_PASSWORD=${{ secrets.SB_DB_PASSWORD }}
+          flags: |
+            --port=8082
+            --ingress=internal
+            --allow-unauthenticated
+            --min-instances=1
+            --network=${{ env.VPC_NAME }}
+            --subnet=${{ env.SUBNET_NAME }}
+            --vpc-egress=all-traffic
+
+  dream-team-service:
+    needs: [init-infra, config-server, eureka-server]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Configure Docker for GCP
+        run: gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
+
+      - name: Build and Push
+        run: |
+          REPO_URL="${{ env.REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT }}/${{ env.REPO_NAME }}"
+          docker build -t $REPO_URL/dream-team-service:${{ github.sha }} -t $REPO_URL/dream-team-service:latest -f dream-team-service/Dockerfile dream-team-service
+          docker push -a $REPO_URL/dream-team-service
+
+      - name: Deploy to Cloud Run
+        uses: google-github-actions/deploy-cloudrun@v3
+        with:
+          service: dream-team-service
+          image: ${{ env.REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT }}/${{ env.REPO_NAME }}/dream-team-service:latest
+          region: ${{ env.REGION }}
+          env_vars: |
+            SPRING_PROFILES_ACTIVE=prod
+            GCP_PROJECT_NUMBER=${{ env.GCP_PROJECT_NUMBER }}
+            REGION=${{ env.REGION }}
+            CONFIG_SERVER_URL=https://config-server-${{ env.GCP_PROJECT_NUMBER }}.${{ env.REGION }}.run.app
+            EUREKA_SERVER_URL=https://eureka-server-${{ env.GCP_PROJECT_NUMBER }}.${{ env.REGION }}.run.app/eureka/
+            SB_DB_HOST=${{ env.SB_DB_HOST }}
+            SB_DB_PORT=${{ env.SB_DB_PORT }}
+            SB_DB_NAME=${{ env.SB_DB_NAME }}
+            SB_DB_USER=${{ secrets.SB_DB_USER }}
+            SB_DB_PASSWORD=${{ secrets.SB_DB_PASSWORD }}
+          flags: |
+            --port=8083
+            --ingress=internal
+            --allow-unauthenticated
+            --min-instances=1
+            --network=${{ env.VPC_NAME }}
+            --subnet=${{ env.SUBNET_NAME }}
+            --vpc-egress=all-traffic

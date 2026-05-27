@@ -14,6 +14,146 @@ services:
       timeout: 5s
       retries: 5
 
+  postgresdb:
+    image: postgres:18-alpine
+    volumes:
+      - postgres_data:/var/lib/postgresql
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  config-server:
+    build: ./config-server
+    ports:
+      - "8888:8888"
+    environment:
+      CONFIG_REPO_URL: https://github.com/pgr866/msc-soccer-project-config
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "8888"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  eureka-server:
+    build: ./eureka-server
+    ports:
+      - "8761:8761"
+    environment:
+      CONFIG_SERVER_URL: http://config-server:8888
+    depends_on:
+      config-server:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "8761"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  gateway:
+    build: ./gateway
+    ports:
+      - "8080:8080"
+    environment:
+      CONFIG_SERVER_URL: http://config-server:8888
+      EUREKA_SERVER_URL: http://eureka-server:8761/eureka/
+      FIREBASE_AUTH_EMULATOR_HOST: firebase-emulator:9099
+      FIRESTORE_EMULATOR_HOST: firebase-emulator:8088
+    depends_on:
+      config-server:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+      firebase-emulator:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "8080"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  player-service:
+    build: ./player-service
+    ports:
+      - "8081:8081"
+    environment:
+      CONFIG_SERVER_URL: http://config-server:8888
+      EUREKA_SERVER_URL: http://eureka-server:8761/eureka/
+      SB_DB_HOST: postgresdb
+      SB_DB_PORT: 5432
+      SB_DB_NAME: postgres
+      SB_DB_USER: user
+      SB_DB_PASSWORD: password
+    depends_on:
+      postgresdb:
+        condition: service_healthy
+      firebase-emulator:
+        condition: service_healthy
+      config-server:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "8081"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  comment-service:
+    build: ./comment-service
+    ports:
+      - "8082:8082"
+    environment:
+      CONFIG_SERVER_URL: http://config-server:8888
+      EUREKA_SERVER_URL: http://eureka-server:8761/eureka/
+      SB_DB_HOST: postgresdb
+      SB_DB_PORT: 5432
+      SB_DB_NAME: postgres
+      SB_DB_USER: user
+      SB_DB_PASSWORD: password
+    depends_on:
+      postgresdb:
+        condition: service_healthy
+      config-server:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "8082"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  dream-team-service:
+    build: ./dream-team-service
+    ports:
+      - "8083:8083"
+    environment:
+      CONFIG_SERVER_URL: http://config-server:8888
+      EUREKA_SERVER_URL: http://eureka-server:8761/eureka/
+      SB_DB_HOST: postgresdb
+      SB_DB_PORT: 5432
+      SB_DB_NAME: postgres
+      SB_DB_USER: user
+      SB_DB_PASSWORD: password
+    depends_on:
+      postgresdb:
+        condition: service_healthy
+      config-server:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "8083"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   corba-app:
     build: corba-app
     container_name: corba-app
@@ -28,3 +168,6 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+
+volumes:
+  postgres_data:
