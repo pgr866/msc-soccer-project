@@ -169,5 +169,49 @@ services:
       timeout: 5s
       retries: 5
 
+  mongodb:
+    image: mongo:7.0.34-jammy
+    volumes:
+      - mongo-data:/data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: user
+      MONGO_INITDB_ROOT_PASSWORD: password
+    healthcheck:
+      test: ["CMD-SHELL", "mongosh --quiet --eval 'db.runCommand(\"ping\").ok'"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  node-api:
+    build:
+      context: ./node-api
+      target: development
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./node-api:/app
+      - node-cache:/app/node_modules
+    ports:
+      - "3000:3000"
+    environment:
+      FIREBASE_AUTH_EMULATOR_HOST: firebase-emulator:9099
+      FIRESTORE_EMULATOR_HOST: firebase-emulator:8088
+      MDB_DB_USER: user
+      MDB_DB_PASSWORD: password
+      MDB_DB_HOST: mongodb
+      MDB_DB_NAME: mongo
+      MDB_DB_PORT: 27017
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      firebase-emulator:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "3000"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
 volumes:
   postgres_data:
+  mongo-data:
+  node-cache:
