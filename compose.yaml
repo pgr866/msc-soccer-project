@@ -211,7 +211,37 @@ services:
       timeout: 5s
       retries: 5
 
+  ionic-app:
+    build:
+      context: ./ionic-app
+      target: development
+    volumes:
+      - ./ionic-app:/app
+      - ionic-cache:/app/node_modules
+      - angular-cache:/app/.angular
+    ports:
+      - "8100:8100"
+    depends_on:
+      firebase-emulator:
+        condition: service_healthy
+
+  # cypress:
+  #   image: cypress/included:15.15.0
+  #   network_mode: "host"
+  #   environment:
+  #     - DISPLAY=$DISPLAY
+  #     - XDG_RUNTIME_DIR=$XDG_RUNTIME_DIR
+  #     - ELECTRON_OZONE_PLATFORM_HINT=wayland
+  #   volumes:
+  #     - ./ionic-app:/app
+  #     - ionic-cache:/app/node_modules
+  #     - $XDG_RUNTIME_DIR/$WAYLAND_DISPLAY:$XDG_RUNTIME_DIR/$WAYLAND_DISPLAY
+  #   working_dir: /app
+  #   entrypoint: npx cypress open --project .
+
 volumes:
   postgres_data:
   mongo-data:
   node-cache:
+  ionic-cache:
+  angular-cache:

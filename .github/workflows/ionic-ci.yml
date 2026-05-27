@@ -1,0 +1,114 @@
+name: CI Ionic App
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'ionic-app/**'
+      - '.github/workflows/ionic-*.yml'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'ionic-app/**'
+      - '.github/workflows/ionic-*.yml'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      checks: write
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          cache: 'npm'
+          cache-dependency-path: ionic-app/package-lock.json
+
+      - name: Create environment file
+        shell: bash
+        run: |
+          mkdir -p ionic-app/src/environments/
+          cat <<'EOF' > ionic-app/src/environments/environment.prod.ts
+          ${{ secrets.IONIC_PROD_ENV_FILE }}
+          EOF
+
+      - name: Install dependencies
+        working-directory: ionic-app
+        run: npm ci --legacy-peer-deps
+
+      - name: Save Code Linting Report JSON
+        working-directory: ionic-app
+        run: npm run lint
+        continue-on-error: true
+
+      - name: Build project
+        working-directory: ionic-app
+        run: npm run build
+
+      - name: Start all remaining services
+        run: docker compose up -d --wait postgresdb firebase-emulator config-server eureka-server gateway player-service comment-service dream-team-service mongodb node-api corba-app 
+
+      - name: Run Cypress Component Tests
+        uses: cypress-io/github-action@v7
+        with:
+          working-directory: ionic-app
+          install: false
+          component: true
+
+      - name: Run Cypress E2E Tests in Chrome
+        uses: cypress-io/github-action@v7
+        with:
+          working-directory: ionic-app
+          install: false
+          start: npm start
+          wait-on: 'http://localhost:8100'
+          browser: chrome
+
+      - name: Run Cypress E2E Tests in Firefox
+        uses: cypress-io/github-action@v7
+        with:
+          working-directory: ionic-app
+          install: false
+          start: npm start -- --port 8101
+          wait-on: 'http://localhost:8101'
+          browser: firefox
+
+      - name: Upload Cypress Screenshots/Videos
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: cypress-artifacts
+          path: |
+            cypress/screenshots
+            cypress/videos
+
+      - name: Upload Test & Linting Results
+        uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: test-results
+          path: ionic-app/test-results/
+
+      - name: Annotate Code Linting Results
+        uses: ataylorme/eslint-annotate-action@v4
+        if: always()
+        continue-on-error: true
+        with:
+          github-token: "${{ secrets.GITHUB_TOKEN }}"
+          report-json: ionic-app/test-results/eslint-result.json
+
+      - name: Run Test Reporter
+        uses: dorny/test-reporter@v3
+        if: always()
+        continue-on-error: true
+        with:
+          name: Cypress Tests
+          path: ionic-app/test-results/test-results-*.xml
+          reporter: java-junit
