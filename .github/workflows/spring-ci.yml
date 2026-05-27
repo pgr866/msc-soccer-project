@@ -1,0 +1,113 @@
+name: CI Spring Microservices
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'config-server/**'
+      - 'eureka-server/**'
+      - 'gateway/**'
+      - 'player-service/**'
+      - 'comment-service/**'
+      - 'dream-team-service/**'
+      - '.github/workflows/spring-*.yml'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'config-server/**'
+      - 'eureka-server/**'
+      - 'gateway/**'
+      - 'player-service/**'
+      - 'comment-service/**'
+      - 'dream-team-service/**'
+      - '.github/workflows/spring-*.yml'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service: [config-server, eureka-server, gateway, player-service, comment-service, dream-team-service]
+    permissions:
+      actions: write
+      checks: write
+      contents: read
+      pull-requests: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v5
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Build ${{ matrix.service }}
+        run: mvn -B -f ${{ matrix.service }}/pom.xml clean verify
+
+      - name: Upload Test Results
+        uses: actions/upload-artifact@v7
+        if: success() || failure()
+        with:
+          name: test-results-${{ matrix.service }}
+          path: ${{ matrix.service }}/target/surefire-reports/*.xml
+
+  report:
+    needs: build
+    if: needs.build.result == 'success' || needs.build.result == 'failure'
+    runs-on: ubuntu-latest
+    permissions:
+      checks: write
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Download all test results
+        uses: actions/download-artifact@v4
+        with:
+          pattern: test-results-*
+          path: artifacts
+          merge-multiple: true
+
+      - name: Run Test Reporter
+        uses: dorny/test-reporter@v3
+        if: success() || failure()
+        with:
+          name: JUnit Tests
+          path: "artifacts/**/*.xml"
+          reporter: java-junit
+
+      - name: Add coverage to PR
+        uses: madrapps/jacoco-report@v1.7.2
+        if: github.event_name == 'pull_request' && (success() || failure())
+        with:
+          paths: |
+            gateway/target/site/jacoco/jacoco.xml
+            player-service/target/site/jacoco/jacoco.xml
+            comment-service/target/site/jacoco/jacoco.xml
+            dream-team-service/target/site/jacoco/jacoco.xml
+          token: ${{ secrets.GITHUB_TOKEN }}
+          min-coverage-overall: 80
+          min-coverage-changed-files: 80
+
+      - name: Run Checkstyle
+        uses: dbelyaev/action-checkstyle@v3
+        if: success() || failure()
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          checkstyle_config: sun_checks.xml
+          level: warning
+          reporter: github-check
+          exclude: |
+            ./.github
+            ./docs
+            ./corba-app
+            ./firebase-emulator
+            ./node-api
+            ./ionic-app
