@@ -1,0 +1,15 @@
+module ual {
+    module dwsc {
+        module bufferapp {
+            interface NewsBuffer {
+                boolean put(in string newsXML);
+                boolean get(out string newsXML);
+                boolean read(out string newsXML);
+                long getNewsLength();
+                long getMaxNews();
+                void fijarLimiteNoticias(in long numero_maximo);
+                oneway void shutdown();
+            };
+        };
+    };
+};

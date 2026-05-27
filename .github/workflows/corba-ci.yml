@@ -1,0 +1,77 @@
+name: CI Corba
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'corba-app/**'
+      - '.github/workflows/corba-*.yml'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'corba-app/**'
+      - '.github/workflows/corba-*.yml'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+      checks: write
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Set up JDK 8
+        uses: actions/setup-java@v5
+        with:
+          java-version: '8'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Build corba-server
+        run: mvn -B -f corba-app/corba-server/pom.xml clean verify
+
+      - name: Build corba-client
+        run: mvn -B -f corba-app/corba-client/pom.xml clean verify
+
+      - name: Upload Test Results
+        uses: actions/upload-artifact@v7
+        if: success() || failure()
+        with:
+          name: test-results
+          path: |
+            corba-app/corba-server/target/surefire-reports/*.xml
+            corba-app/corba-client/target/surefire-reports/*.xml
+
+      - name: Run Test Reporter
+        uses: dorny/test-reporter@v3
+        if: success() || failure()
+        with:
+          name: JUnit Tests
+          path: "**/target/surefire-reports/TEST-*.xml"
+          reporter: java-junit
+
+      - name: Add coverage to PR
+        uses: madrapps/jacoco-report@v1.7.2
+        if: github.event_name == 'pull_request' && (success() || failure())
+        with:
+          paths: |
+            corba-app/corba-server/target/site/jacoco/jacoco.xml
+            corba-app/corba-client/target/site/jacoco/jacoco.xml
+          token: ${{ secrets.GITHUB_TOKEN }}
+          min-coverage-overall: 80
+          min-coverage-changed-files: 80
+
+      - name: Run Checkstyle
+        uses: dbelyaev/action-checkstyle@v3
+        if: success() || failure()
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          checkstyle_config: sun_checks.xml
+          level: warning
+          reporter: github-check
+          workdir: './corba-app'
