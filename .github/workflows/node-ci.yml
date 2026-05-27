@@ -1,0 +1,85 @@
+name: CI Node API
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'node-api/**'
+      - '.github/workflows/node-*.yml'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'node-api/**'
+      - '.github/workflows/node-*.yml'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      checks: write
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          cache: 'npm'
+          cache-dependency-path: node-api/package-lock.json
+
+      - name: Install dependencies
+        working-directory: node-api
+        run: npm ci
+
+      - name: Save Code Linting Report JSON
+        working-directory: node-api
+        run: npm run lint
+        continue-on-error: true
+
+      - name: Build project
+        working-directory: node-api
+        run: npm run build
+
+      - name: Run Firebase Emulator
+        run: docker compose up -d --wait firebase-emulator
+
+      - name: Run tests
+        working-directory: node-api
+        run: npm test
+
+      - name: Upload Test & Linting Results
+        uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: test-results
+          path: node-api/coverage/
+
+      - name: Annotate Code Linting Results
+        uses: ataylorme/eslint-annotate-action@v4
+        if: always()
+        continue-on-error: true
+        with:
+          github-token: "${{ secrets.GITHUB_TOKEN }}"
+          report-json: node-api/coverage/eslint-result.json
+
+      - name: Run Test Reporter
+        uses: dorny/test-reporter@v3
+        if: always()
+        continue-on-error: true
+        with:
+          name: JEST Tests
+          path: node-api/coverage/test.results.xml
+          reporter: jest-junit
+
+      - name: Add coverage to PR
+        uses: MishaKav/jest-coverage-comment@v1
+        if: github.event_name == 'pull_request' && always()
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          fail-on-error: false
+          coverage-summary-path: node-api/coverage/coverage-summary.json
+          coverage-path: node-api/coverage/coverage-final.json
