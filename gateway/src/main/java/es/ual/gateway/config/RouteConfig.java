@@ -64,6 +64,13 @@ public class RouteConfig {
                             .rewritePath("/player-service/(?<remaining>.*)", "/${remaining}"))
                 .uri(playerUri))
 
+            // DELETE /api/players/:id (Admin)
+            .route("delete-player", r -> r.path("/player-service/api/players/{id}")
+                .and().method("DELETE")
+                .filters(f -> f.filter(new JwtAuthenticationFilter("ADMIN"))
+                            .rewritePath("/player-service/(?<remaining>.*)", "/${remaining}"))
+                .uri(playerUri))
+
             .build();
     }
 }
