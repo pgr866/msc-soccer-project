@@ -2,6 +2,7 @@ package es.ual.player_service.controller;
 
 import es.ual.player_service.domain.Player;
 import es.ual.player_service.repository.PlayerRepository;
+import es.ual.player_service.exception.PlayerNotFoundException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -14,6 +15,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -54,6 +56,35 @@ public class PlayerController {
 
         List<Player> players = playerRepository.findByFilters(query, dateStart, dateEnd);
         return ResponseEntity.ok(players);
+    }
+
+    @Operation(
+        summary = "Get player by ID", 
+        description = "Retrieves a single player's details by its unique identifier."
+    )
+    @ApiResponse(
+        responseCode = "200", 
+        description = "Player found",
+        content = @Content(
+            mediaType = MediaType.APPLICATION_JSON_VALUE,
+            examples = @ExampleObject(value = "{\"id\": 1, \"name\": \"Neymar\", \"firstName\": \"Neymar\", \"lastName\": \"da Silva Santos Júnior\", \"age\": 28, \"birthdate\": \"1992-02-05\", \"nationality\": \"Brazil\", \"height\": 1.75, \"weight\": 68.00, \"number\": 10, \"team\": \"Paris Saint Germain\", \"league\": \"Ligue 1\", \"position\": \"Attacker\", \"photoUrl\": \"https://media.api-sports.io/football/players/276.png\", \"latitude\": 48.8566, \"longitude\": 2.3522, \"createdAt\": \"2026-05-27T12:00:00\"}")
+        )
+    )
+    @ApiResponse(
+        responseCode = "404", 
+        description = "Player not found",
+        content = @Content(
+            mediaType = MediaType.APPLICATION_JSON_VALUE,
+            examples = @ExampleObject(value = "{\"timestamp\": \"2026-05-27 22:00:00\", \"error\": \"Player not found with id: 1\"}")
+        )
+    )
+    @GetMapping(value = "/players/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Player> getPlayerById(
+            @Parameter(description = "Unique ID of the player to retrieve", required = true) 
+            @PathVariable Long id) {
+        return playerRepository.findById(id)
+                .map(ResponseEntity::ok)
+                .orElseThrow(() -> new PlayerNotFoundException(HttpStatus.NOT_FOUND, "Player not found with id: " + id));
     }
 
     @Operation(
