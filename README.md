@@ -122,7 +122,7 @@ administrador:
 | GET      | /api/players             | query?, dateStart?, dateEnd? | 200 OK [Player]            | Any                 |
 | GET      | /api/players/:id         | id                           | 200 OK {Player, [Comment]} | Any                 |
 | POST     | /api/players             | {Player}*                    | 201 Created {Player}       | Authenticated/Admin |
-| PUT      | /api/players/:id         | id, {Player}                 | 200 OK {Player}            | Admin               |
+| PUT      | /api/players/:id         | id, {Player}*                | 200 OK {Player}            | Admin               |
 | DELETE   | /api/players/:id         | id                           | 204 No Content             | Admin               |
 | GET      | /api/players/search      | query?                       | 200 OK [ExternalPlayer]    | Authenticated/Admin |
 | POST     | /api/players/import      | [ExternalPlayerIds]          | 201 Created [Player]       | Authenticated/Admin |
@@ -132,7 +132,7 @@ administrador:
 | GET      | /api/dream-teams         | -                            | 200 OK [DreamTeam]         | Authenticated/Admin |
 | POST     | /api/dream-teams         | -                            | 201 Created {DreamTeam}    | Authenticated/Admin |
 
-* `createdAt` generado automáticamente por el servidor.
+* Player sin `createdAt`, ya que es generado automáticamente por el servidor.
 
 ## Llamada [API-Football](https://www.api-football.com/)
 

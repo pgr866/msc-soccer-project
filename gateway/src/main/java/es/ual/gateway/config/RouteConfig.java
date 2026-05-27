@@ -45,7 +45,7 @@ public class RouteConfig {
                 .uri(playerUri))
 
             // GET /api/players/:id (Any)
-            .route("get-player-by-id", r -> r.path("/player-service/api/players/{id}")
+            .route("get-player", r -> r.path("/player-service/api/players/{id}")
                 .and().method("GET")
                 .filters(f -> f.rewritePath("/player-service/(?<remaining>.*)", "/${remaining}"))
                 .uri(playerUri))
@@ -54,6 +54,13 @@ public class RouteConfig {
             .route("create-player", r -> r.path("/player-service/api/players")
                 .and().method("POST")
                 .filters(f -> f.filter(new JwtAuthenticationFilter("USER,ADMIN"))
+                            .rewritePath("/player-service/(?<remaining>.*)", "/${remaining}"))
+                .uri(playerUri))
+            
+            // PUT /api/players/:id (Admin)
+            .route("update-player", r -> r.path("/player-service/api/players/{id}")
+                .and().method("PUT")
+                .filters(f -> f.filter(new JwtAuthenticationFilter("ADMIN"))
                             .rewritePath("/player-service/(?<remaining>.*)", "/${remaining}"))
                 .uri(playerUri))
 
