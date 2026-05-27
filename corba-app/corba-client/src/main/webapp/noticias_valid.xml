@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<noticias>
+	<noticia>
+		<fecha>23/03/2026</fecha>
+		<titulo>Exito de la UAL en IndesIA</titulo>
+		<descripcion>La formacion en IA de la UAL impulsa el exito de sus
+			studiantes en el II Hackathon de IndesIA</descripcion>
+		<interes>alto</interes>
+		<etiquetas>
+			<etiqueta>#UAL</etiqueta>
+			<etiqueta>#Almeria</etiqueta>
+			<etiqueta>#Hackaton</etiqueta>
+			<etiqueta>#Informatica</etiqueta>
+		</etiquetas>
+	</noticia>
+</noticias>

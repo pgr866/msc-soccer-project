@@ -1,0 +1,15 @@
+services:
+  corba-app:
+    build: corba-app
+    container_name: corba-app
+    restart: always
+    ports:
+      - "8084:8084"
+    environment:
+      CLIENT_CORBA_PORT: 8084
+      ORB_CORBA_PORT: 1050
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "8084"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
