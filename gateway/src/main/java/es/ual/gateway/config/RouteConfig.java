@@ -37,17 +37,17 @@ public class RouteConfig {
         String playerUri = getServiceUri("player-service");
 
         return builder.routes()
-            // ADMIN endpoints
-            .route("admin-only", r -> r.path("/player-service/api/players/**")
-                .filters(f -> f.filter(new JwtAuthenticationFilter("ADMIN"))
-                            .rewritePath("/player-service/(?<remaining>.*)", "/${remaining}"))
+
+            // GET /api/players (Any)
+            .route("get-players", r -> r.path("/player-service/api/players")
+                .and().method("GET")
+                .filters(f -> f.rewritePath("/player-service/(?<remaining>.*)", "/${remaining}"))
                 .uri(playerUri))
 
-            // USER endpoints
-            .route("user-protected", r -> r.path("/player-service/api/players2/**")
-                .filters(f -> f.filter(new JwtAuthenticationFilter(null))
-                            .rewritePath("/player-service/(?<remaining>.*)", "/${remaining}"))
-                .uri(playerUri))
+            // .route("user-protected", r -> r.path("/player-service/api/players2/**")
+            //     .filters(f -> f.filter(new JwtAuthenticationFilter("ADMIN"))
+            //                 .rewritePath("/player-service/(?<remaining>.*)", "/${remaining}"))
+            //     .uri(playerUri))
             .build();
     }
 }
