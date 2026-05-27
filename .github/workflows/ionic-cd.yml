@@ -1,0 +1,56 @@
+name: CD Ionic App
+
+on:
+  workflow_run:
+    workflows: ['CI Ionic App']
+    branches: [main]
+    types: [completed]
+  workflow_dispatch:
+
+env:
+  GCP_PROJECT: "cnsa2026-pgr866"
+  REPO_NAME: "docker-repo"
+  REGION: "us-east1"
+  IMAGE_NAME: "ionic-app"
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Create environment file
+        shell: bash
+        run: |
+          mkdir -p ionic-app/src/environments/
+          cat <<'EOF' > ionic-app/src/environments/environment.prod.ts
+          ${{ secrets.IONIC_PROD_ENV_FILE }}
+          EOF
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Configure Docker for GCP
+        run: gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
+
+      - name: Build and Push Image
+        run: |
+            IMAGE_PATH="${{ env.REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT }}/${{ env.REPO_NAME }}/${{ env.IMAGE_NAME }}"
+            docker build --target production -t $IMAGE_PATH:${{ github.sha }} -f ionic-app/Dockerfile ionic-app
+            docker tag $IMAGE_PATH:${{ github.sha }} $IMAGE_PATH:latest
+            docker push $IMAGE_PATH:${{ github.sha }}
+            docker push $IMAGE_PATH:latest
+
+      - name: Deploy to Cloud Run
+        uses: google-github-actions/deploy-cloudrun@v3
+        with:
+          service: ${{ env.IMAGE_NAME }}
+          image: ${{ env.REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT }}/${{ env.REPO_NAME }}/${{ env.IMAGE_NAME }}:latest
+          region: ${{ env.REGION }}
+          flags: >
+            --port=8100
+            --allow-unauthenticated
