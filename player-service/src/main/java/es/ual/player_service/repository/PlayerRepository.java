@@ -6,16 +6,18 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.List;
 
 @Repository
 public interface PlayerRepository extends JpaRepository<Player, Long> {
 
     @Query(value = "SELECT * FROM player WHERE " +
-           "(?1 IS NULL OR name LIKE CONCAT('%', ?1, '%') OR team LIKE CONCAT('%', ?1, '%') OR league LIKE CONCAT('%', ?1, '%')) AND " +
-           "(CAST(?2 AS TIMESTAMP) IS NULL OR created_at >= CAST(?2 AS TIMESTAMP)) AND " +
-           "(CAST(?3 AS TIMESTAMP) IS NULL OR created_at <= CAST(?3 AS TIMESTAMP))", 
+           "(?1 IS NULL OR LOWER(name) LIKE LOWER(CONCAT('%', ?1, '%')) OR " +
+           "LOWER(team) LIKE LOWER(CONCAT('%', ?1, '%')) OR " +
+           "LOWER(league) LIKE LOWER(CONCAT('%', ?1, '%'))) AND " +
+           "(CAST(?2 AS DATE) IS NULL OR CAST(created_at AS DATE) >= CAST(?2 AS DATE)) AND " +
+           "(CAST(?3 AS DATE) IS NULL OR CAST(created_at AS DATE) <= CAST(?3 AS DATE))", 
            nativeQuery = true)
-    List<Player> findByFilters(String query, LocalDateTime dateStart, LocalDateTime dateEnd);
+    List<Player> findByFilters(String query, LocalDate dateStart, LocalDate dateEnd);
 }

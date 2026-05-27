@@ -15,14 +15,16 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -34,7 +36,7 @@ public class PlayerController {
     @Autowired
     private PlayerRepository playerRepository;
 
-    @Operation(summary = "Get players by filters", description = "Retrieves a list of players filtered by name, team/league or creation date range")
+    @Operation(summary = "Get players by filters", description = "Retrieves a list of players filtered by name, team or league, and creation date range")
     @ApiResponse(
         responseCode = "200",
         description = "Players list obtained",
@@ -48,12 +50,11 @@ public class PlayerController {
             @Parameter(description = "Search term for name, team or league") 
             @RequestParam(required = false) String query,
             
-            @Parameter(description = "Start date filter (ISO format: yyyy-MM-dd'T'HH:mm:ss)") 
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime dateStart,
+            @Parameter(description = "Start date filter (Format: yyyy-MM-dd)") 
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateStart,
             
-            @Parameter(description = "End date filter (ISO format: yyyy-MM-dd'T'HH:mm:ss)") 
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime dateEnd) {
-
+            @Parameter(description = "End date filter (Format: yyyy-MM-dd)") 
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateEnd) {
         List<Player> players = playerRepository.findByFilters(query, dateStart, dateEnd);
         return ResponseEntity.ok(players);
     }
@@ -72,10 +73,10 @@ public class PlayerController {
     )
     @ApiResponse(
         responseCode = "404", 
-        description = "Player not found",
+        description = "Error: Player not found",
         content = @Content(
             mediaType = MediaType.APPLICATION_JSON_VALUE,
-            examples = @ExampleObject(value = "{\"timestamp\": \"2026-05-27 22:00:00\", \"error\": \"Player not found with id: 1\"}")
+            examples = @ExampleObject(value = "{\"timestamp\": \"2026-05-27 12:00:00\", \"error\": \"Player not found with id: 1\"}")
         )
     )
     @GetMapping(value = "/players/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -99,6 +100,11 @@ public class PlayerController {
             examples = @ExampleObject(value = "{\"id\": 1, \"name\": \"Neymar\", \"firstName\": \"Neymar\", \"lastName\": \"da Silva Santos Júnior\", \"age\": 28, \"birthdate\": \"1992-02-05\", \"nationality\": \"Brazil\", \"height\": 1.75, \"weight\": 68.00, \"number\": 10, \"team\": \"Paris Saint Germain\", \"league\": \"Ligue 1\", \"position\": \"Attacker\", \"photoUrl\": \"https://media.api-sports.io/football/players/276.png\", \"latitude\": 48.8566, \"longitude\": 2.3522, \"createdAt\": \"2026-05-27T12:00:00\"}")
         )
     )
+    @ApiResponse(
+        responseCode = "401",
+        description = "Error: Unauthorized",
+        content = @Content(examples = @ExampleObject(value = "{}"))
+    )
     @PostMapping(value = "/players", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Player> createPlayer(
             @io.swagger.v3.oas.annotations.parameters.RequestBody(
@@ -112,5 +118,70 @@ public class PlayerController {
         player.setCreatedAt(LocalDateTime.now());
         Player savedPlayer = playerRepository.save(player);
         return new ResponseEntity<>(savedPlayer, HttpStatus.CREATED);
+    }
+
+    @Operation(
+        summary = "Update an existing player", 
+        description = "Updates all fields of a player. The 'createdAt' field is preserved."
+    )
+    @ApiResponse(
+        responseCode = "200", 
+        description = "Player updated successfully",
+        content = @Content(
+            mediaType = MediaType.APPLICATION_JSON_VALUE,
+            examples = @ExampleObject(value = "{\"id\": 1, \"name\": \"Neymar\", \"firstName\": \"Neymar\", \"lastName\": \"da Silva Santos Júnior\", \"age\": 28, \"birthdate\": \"1992-02-05\", \"nationality\": \"Brazil\", \"height\": 1.75, \"weight\": 68.00, \"number\": 10, \"team\": \"Paris Saint Germain\", \"league\": \"Ligue 1\", \"position\": \"Attacker\", \"photoUrl\": \"https://media.api-sports.io/football/players/276.png\", \"latitude\": 48.8566, \"longitude\": 2.3522, \"createdAt\": \"2026-05-27T12:00:00\"}")
+        )
+    )
+    @ApiResponse(
+        responseCode = "404", 
+        description = "Error: Player not found",
+        content = @Content(
+            mediaType = MediaType.APPLICATION_JSON_VALUE,
+            examples = @ExampleObject(value = "{\"timestamp\": \"2026-05-27 12:00:00\", \"error\": \"Player not found with id: 1\"}")
+        )
+    )
+    @ApiResponse(
+        responseCode = "401",
+        description = "Error: Unauthorized",
+        content = @Content(examples = @ExampleObject(value = "{}"))
+    )
+    @ApiResponse(
+        responseCode = "403",
+        description = "Error: Forbidden",
+        content = @Content(examples = @ExampleObject(value = "{}"))
+    )
+    @PutMapping(value = "/players/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Player> updatePlayer(
+            @Parameter(description = "Unique ID of the player to update", required = true) 
+            @PathVariable Long id,
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                description = "Updated player object",
+                required = true,
+                content = @Content(
+                    examples = @ExampleObject(value = "{\"name\": \"Neymar\", \"firstName\": \"Neymar\", \"lastName\": \"da Silva Santos Júnior\", \"age\": 28, \"birthdate\": \"1992-02-05\", \"nationality\": \"Brazil\", \"height\": 1.75, \"weight\": 68.00, \"number\": 10, \"team\": \"Paris Saint Germain\", \"league\": \"Ligue 1\", \"position\": \"Attacker\", \"photoUrl\": \"https://media.api-sports.io/football/players/276.png\", \"latitude\": 48.8566, \"longitude\": 2.3522}")
+                )
+            )
+            @Valid @RequestBody Player playerDetails) {
+        return playerRepository.findById(id)
+                .map(existingPlayer -> {
+                    existingPlayer.setName(playerDetails.getName());
+                    existingPlayer.setFirstName(playerDetails.getFirstName());
+                    existingPlayer.setLastName(playerDetails.getLastName());
+                    existingPlayer.setAge(playerDetails.getAge());
+                    existingPlayer.setBirthdate(playerDetails.getBirthdate());
+                    existingPlayer.setNationality(playerDetails.getNationality());
+                    existingPlayer.setHeight(playerDetails.getHeight());
+                    existingPlayer.setWeight(playerDetails.getWeight());
+                    existingPlayer.setNumber(playerDetails.getNumber());
+                    existingPlayer.setTeam(playerDetails.getTeam());
+                    existingPlayer.setLeague(playerDetails.getLeague());
+                    existingPlayer.setPosition(playerDetails.getPosition());
+                    existingPlayer.setPhotoUrl(playerDetails.getPhotoUrl());
+                    existingPlayer.setLatitude(playerDetails.getLatitude());
+                    existingPlayer.setLongitude(playerDetails.getLongitude());
+                    Player updatedPlayer = playerRepository.save(existingPlayer);
+                    return ResponseEntity.ok(updatedPlayer);
+                })
+                .orElseThrow(() -> new PlayerNotFoundException(HttpStatus.NOT_FOUND, "Player not found with id: " + id));
     }
 }
