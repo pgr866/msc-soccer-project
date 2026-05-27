@@ -43,11 +43,14 @@ public class RouteConfig {
                 .and().method("GET")
                 .filters(f -> f.rewritePath("/player-service/(?<remaining>.*)", "/${remaining}"))
                 .uri(playerUri))
+            
+            // POST /api/players (Authenticated/Admin)
+            .route("create-player", r -> r.path("/player-service/api/players")
+                .and().method("POST")
+                .filters(f -> f.filter(new JwtAuthenticationFilter("USER,ADMIN"))
+                            .rewritePath("/player-service/(?<remaining>.*)", "/${remaining}"))
+                .uri(playerUri))
 
-            // .route("user-protected", r -> r.path("/player-service/api/players2/**")
-            //     .filters(f -> f.filter(new JwtAuthenticationFilter("ADMIN"))
-            //                 .rewritePath("/player-service/(?<remaining>.*)", "/${remaining}"))
-            //     .uri(playerUri))
             .build();
     }
 }

@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.MediaType;
@@ -16,6 +17,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -34,7 +38,7 @@ public class PlayerController {
         description = "Players list obtained",
         content = @Content(
             mediaType = MediaType.APPLICATION_JSON_VALUE,
-            examples = @ExampleObject(value = "[{\"id\": 1, \"name\": \"Neymar\", \"firstName\": \"Neymar\", \"lastName\": \"da Silva Santos Júnior\", \"age\": 28, \"team\": \"Paris Saint Germain\", \"league\": \"Ligue 1\", \"position\": \"Attacker\", \"latitude\": 48.8566, \"longitude\": 2.3522, \"createdAt\": \"2026-05-27T12:00:00\"}]")
+            examples = @ExampleObject(value = "[{\"id\": 1, \"name\": \"Neymar\", \"firstName\": \"Neymar\", \"lastName\": \"da Silva Santos Júnior\", \"age\": 28, \"birthdate\": \"1992-02-05\", \"nationality\": \"Brazil\", \"height\": 1.75, \"weight\": 68.00, \"number\": 10, \"team\": \"Paris Saint Germain\", \"league\": \"Ligue 1\", \"position\": \"Attacker\", \"photoUrl\": \"https://media.api-sports.io/football/players/276.png\", \"latitude\": 48.8566, \"longitude\": 2.3522, \"createdAt\": \"2026-05-27T12:00:00\"}]")
         )
     )
     @GetMapping(value = "/players", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -50,5 +54,32 @@ public class PlayerController {
 
         List<Player> players = playerRepository.findByFilters(query, dateStart, dateEnd);
         return ResponseEntity.ok(players);
+    }
+
+    @Operation(
+        summary = "Create a new player", 
+        description = "Registers a new player in the system. The 'createdAt' field is set automatically by the server."
+    )
+    @ApiResponse(
+        responseCode = "201",
+        description = "Player created successfully",
+        content = @Content(
+            mediaType = MediaType.APPLICATION_JSON_VALUE,
+            examples = @ExampleObject(value = "{\"id\": 1, \"name\": \"Neymar\", \"firstName\": \"Neymar\", \"lastName\": \"da Silva Santos Júnior\", \"age\": 28, \"birthdate\": \"1992-02-05\", \"nationality\": \"Brazil\", \"height\": 1.75, \"weight\": 68.00, \"number\": 10, \"team\": \"Paris Saint Germain\", \"league\": \"Ligue 1\", \"position\": \"Attacker\", \"photoUrl\": \"https://media.api-sports.io/football/players/276.png\", \"latitude\": 48.8566, \"longitude\": 2.3522, \"createdAt\": \"2026-05-27T12:00:00\"}")
+        )
+    )
+    @PostMapping(value = "/players", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Player> createPlayer(
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                description = "Player object to be created",
+                required = true,
+                content = @Content(
+                    examples = @ExampleObject(value = "{\"name\": \"Neymar\", \"firstName\": \"Neymar\", \"lastName\": \"da Silva Santos Júnior\", \"age\": 28, \"birthdate\": \"1992-02-05\", \"nationality\": \"Brazil\", \"height\": 1.75, \"weight\": 68.00, \"number\": 10, \"team\": \"Paris Saint Germain\", \"league\": \"Ligue 1\", \"position\": \"Attacker\", \"photoUrl\": \"https://media.api-sports.io/football/players/276.png\", \"latitude\": 48.8566, \"longitude\": 2.3522}")
+                )
+            )
+            @Valid @RequestBody Player player) {
+        player.setCreatedAt(LocalDateTime.now());
+        Player savedPlayer = playerRepository.save(player);
+        return new ResponseEntity<>(savedPlayer, HttpStatus.CREATED);
     }
 }

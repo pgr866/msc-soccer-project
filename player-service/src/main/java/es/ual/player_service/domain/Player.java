@@ -14,6 +14,7 @@ public class Player {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotBlank(message = "Name is mandatory")
     @Column(nullable = false, length = 100)
     private String name;
 
