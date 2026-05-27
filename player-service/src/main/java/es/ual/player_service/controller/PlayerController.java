@@ -17,6 +17,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -102,8 +103,7 @@ public class PlayerController {
     )
     @ApiResponse(
         responseCode = "401",
-        description = "Error: Unauthorized",
-        content = @Content(examples = @ExampleObject(value = "{}"))
+        description = "Error: Unauthorized"
     )
     @PostMapping(value = "/players", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Player> createPlayer(
@@ -142,13 +142,11 @@ public class PlayerController {
     )
     @ApiResponse(
         responseCode = "401",
-        description = "Error: Unauthorized",
-        content = @Content(examples = @ExampleObject(value = "{}"))
+        description = "Error: Unauthorized"
     )
     @ApiResponse(
         responseCode = "403",
-        description = "Error: Forbidden",
-        content = @Content(examples = @ExampleObject(value = "{}"))
+        description = "Error: Forbidden"
     )
     @PutMapping(value = "/players/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Player> updatePlayer(
@@ -183,5 +181,40 @@ public class PlayerController {
                     return ResponseEntity.ok(updatedPlayer);
                 })
                 .orElseThrow(() -> new PlayerNotFoundException(HttpStatus.NOT_FOUND, "Player not found with id: " + id));
+    }
+
+    @Operation(
+        summary = "Delete a player", 
+        description = "Removes a player from the system by its unique identifier."
+    )
+    @ApiResponse(
+        responseCode = "204", 
+        description = "Player deleted successfully"
+    )
+    @ApiResponse(
+        responseCode = "404", 
+        description = "Error: Player not found",
+        content = @Content(
+            mediaType = MediaType.APPLICATION_JSON_VALUE,
+            examples = @ExampleObject(value = "{\"timestamp\": \"2026-05-27 12:00:00\", \"error\": \"Player not found with id: 1\"}")
+        )
+    )
+    @ApiResponse(
+        responseCode = "401",
+        description = "Error: Unauthorized"
+    )
+    @ApiResponse(
+        responseCode = "403",
+        description = "Error: Forbidden"
+    )
+    @DeleteMapping(value = "/players/{id}")
+    public ResponseEntity<Void> deletePlayer(
+            @Parameter(description = "Unique ID of the player to delete", required = true) 
+            @PathVariable Long id) {
+        if (!playerRepository.existsById(id)) {
+            throw new PlayerNotFoundException(HttpStatus.NOT_FOUND, "Player not found with id: " + id);
+        }
+        playerRepository.deleteById(id);
+        return ResponseEntity.noContent().build();
     }
 }
