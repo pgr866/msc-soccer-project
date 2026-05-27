@@ -236,6 +236,7 @@ jobs:
             SB_DB_NAME=${{ env.SB_DB_NAME }}
             SB_DB_USER=${{ secrets.SB_DB_USER }}
             SB_DB_PASSWORD=${{ secrets.SB_DB_PASSWORD }}
+            FOOTBALL_API_KEY=${{ secrets.FOOTBALL_API_KEY }}
           flags: |
             --port=8081
             --ingress=internal

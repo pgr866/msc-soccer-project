@@ -57,7 +57,7 @@ public class JwtAuthenticationFilter implements GatewayFilter {
             exchange.getResponse().setStatusCode(HttpStatus.FORBIDDEN);
             return exchange.getResponse().setComplete();
         }
-        return chain.filter(exchange.mutate().request(r -> r.header("X-User-ID", token.getUid()).header("X-User-Role", role)).build());
+        return chain.filter(exchange.mutate().request(r -> r.header("X-User-ID", token.getUid()).header("X-User-Email", token.getEmail()).header("X-User-Role", role)).build());
     }
 
     private Mono<Void> unauthorized(ServerWebExchange exchange) {

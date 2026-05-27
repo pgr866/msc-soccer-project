@@ -36,3 +36,107 @@ Se deben implementar pruebas unitarias para los componentes y los servicios desa
 ## Diagrama Entidad-Relación
 
 ![Diagrama Entidad-Relación](docs/diagrams/ERD.drawio.svg)
+
+## Vistas
+
+```
+usuario no registrado:
+
+/login
+  inputs correo y contraseña
+  botón iniciar sesión
+  enlace a registrarse (/signup)
+
+/signup
+  inputs correo y contraseña
+  botón registrarse
+  enlace a iniciar sesión (/login)
+
+
+cualquier rol:
+
+cabecera -> toggle de backends    botón iniciar (/login) / cerrar sesión (/players)
+
+/players
+  barra de búsqueda de jugadores por nombre, equipo o liga (botón de búsqueda al final de barra estilo youtube)
+  filtro fecha de alta -> dos datepicker: fecha inicio, fecha fin   botón importar jugadores (/import-players)   botón crear jugador (/create-player)
+  lista de jugadores -> cada ítem lleva a detalles jugador (/player-detail/:id)
+
+/player-detail/:id
+  solo administrador: botón crear noticia jugador (/create-news)    botón editar jugador (/edit-player)    botón eliminar jugador
+  imagen
+  datos...
+  mapa no interactivo con chincheta
+  coordenadas de la chincheta
+  text area para comentar (maximo 1000 caracteres)
+  cinco estrellas para seleccionar [0-5]    botón comentar (pide geolocalizacion)
+  lista comentarios (reciente primero)
+  solo administrador: botón borrar comentario
+
+
+usuario registrado y administrador:
+
+tabs: noticias    jugadores   equipazos
+
+/import-players
+  barra de búsqueda de jugador por nombre en api externa
+  lista de 20 primeros resultados (botón de búsqueda al final de barra estilo youtube) -> cada ítem tiene checkbox, imagen y datos de jugador
+  botón importar seleccionados en base de datos
+
+/create-player
+  imagen
+  input con url de la imagen    botón cámara
+  inputs de datos...
+  mapa con chincheta, esta se puede mover
+  coordenadas de la chincheta (por defecto ubicación actual)    botón resetear a ubicación actual
+  botón crear jugador
+
+/dream-teams
+  botón generar equipazo con ia
+  lista de equipazos (recientes primero) -> cada ítem despliega la lista de jugadores -> cada jugador con enlace a sus detalles (/player-detail/:id)
+
+/news
+  lista noticias (recientes primero)
+
+/news/:id
+  título
+  fecha   tags    nombre jugador
+  contenido
+
+
+administrador:
+
+/create-news
+  input título
+  input tags    nombre jugador
+  text area contenido
+
+/edit-player
+  reutilizar formulario de /create-player pero con datos ya rellenos y botón actualizar
+```
+
+## Lista de endpoints
+
+| HttpVerb | Endpoint                 | Params                       | Response                   | Role             |
+| -------- | ------------------------ | ---------------------------- | -------------------------- | ---------------- |
+| GET      | /api/players             | query?, dateStart?, dateEnd? | 200 OK [Player]            | Any              |
+| GET      | /api/players/:id         | id                           | 200 OK {Player, [Comment]} | Any              |
+| POST     | /api/players             | {Player}                     | 201 Created {Player}       | Registered/Admin |
+| PUT      | /api/players/:id         | id, {Player}                 | 200 OK {Player}            | Admin            |
+| DELETE   | /api/players/:id         | id                           | 204 No Content             | Admin            |
+| GET      | /api/players/search      | query?                       | 200 OK [ExternalPlayer]    | Registered/Admin |
+| POST     | /api/players/import      | [ExternalPlayerIds]          | 201 Created [Player]       | Registered/Admin |
+| GET      | /api/comments/player/:id | id                           | 200 OK [Comment]           | Any              |
+| POST     | /api/comments/player/:id | id, {Comment}                | 201 Created {Comment}      | Any              |
+| DELETE   | /api/comments/:id        | id                           | 204 No Content             | Admin            |
+| GET      | /api/dream-teams         | -                            | 200 OK [DreamTeam]         | Registered/Admin |
+| POST     | /api/dream-teams         | -                            | 201 Created {DreamTeam}    | Registered/Admin |
+
+## Llamada [API-Football](https://www.api-football.com/)
+
+- Búsqueda de jugadores: `https://v3.football.api-sports.io/players/profiles?search=ney`
+
+Para los seleccionados:
+
+- Se obtiene id del equipo que está en 2026 (que no incluya su nacionalidad): `https://v3.football.api-sports.io/players/teams?player=276`
+- Se obtiene la liga en la que está el equipo en 2026 (elegir la de tipo liga, que no sea del mundo y mayor duración): `https://v3.football.api-sports.io/leagues?team=128&season=2026`
