@@ -1,4 +1,19 @@
 services:
+  firebase-emulator:
+    build: ./firebase-emulator
+    volumes:
+      - ./firebase-emulator/firebase-export:/app/firebase-export
+    ports:
+      - "4000:4000"
+      - "9099:9099"
+      - "8088:8088"
+      - "9199:9199"
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "9150"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   corba-app:
     build: corba-app
     container_name: corba-app
