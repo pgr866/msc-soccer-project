@@ -1,4 +1,4 @@
-package es.ual.player_service.domain;
+package es.ual.player_service.dto;
 
 import java.time.LocalDate;
 

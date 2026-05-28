@@ -51,6 +51,13 @@ public class RouteConfig {
                             .rewritePath("/player-service/(?<remaining>.*)", "/${remaining}"))
                 .uri(playerUri))
 
+            // POST /api/players/import (Authenticated/Admin)
+            .route("import-external-players", r -> r.path("/player-service/api/players/import")
+                .and().method("POST")
+                .filters(f -> f.filter(new JwtAuthenticationFilter("USER,ADMIN"))
+                            .rewritePath("/player-service/(?<remaining>.*)", "/${remaining}"))
+                .uri(playerUri))
+
             // GET /api/players/:id (Any)
             .route("get-player", r -> r.path("/player-service/api/players/{id}")
                 .and().method("GET")
