@@ -35,6 +35,7 @@ public class RouteConfig {
     @Bean
     public RouteLocator customRouteLocator(RouteLocatorBuilder builder) {
         String playerUri = getServiceUri("player-service");
+        String commentUri = getServiceUri("comment-service");
 
         return builder.routes()
 
@@ -84,6 +85,12 @@ public class RouteConfig {
                 .filters(f -> f.filter(new JwtAuthenticationFilter("ADMIN"))
                             .rewritePath("/player-service/(?<remaining>.*)", "/${remaining}"))
                 .uri(playerUri))
+
+            // GET /api/comments/player/:id (Any)
+            .route("get-comments-by-player", r -> r.path("/comment-service/api/comments/player/{id}")
+                .and().method("GET")
+                .filters(f -> f.rewritePath("/comment-service/(?<remaining>.*)", "/${remaining}"))
+                .uri(commentUri))
 
             .build();
     }
