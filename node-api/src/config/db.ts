@@ -1,8 +1,8 @@
 import mongoose from 'mongoose';
 
 export const getDatabaseUrl = (): string => {
-    const user = encodeURIComponent(process.env['MDB_DB_USER'] || 'soccer_user');
-    const password = encodeURIComponent(process.env['MDB_DB_PASSWORD'] || 'soccer_password');
+    const user = encodeURIComponent(process.env['MDB_DB_USER'] || 'user');
+    const password = encodeURIComponent(process.env['MDB_DB_PASSWORD'] || 'password');
     const host = process.env['MDB_DB_HOST'] || 'localhost';
     const name = process.env['MDB_DB_NAME'] || 'mongo';
     const isAtlas = host.includes('mongodb.net');
