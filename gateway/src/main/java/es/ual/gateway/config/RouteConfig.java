@@ -92,6 +92,12 @@ public class RouteConfig {
                 .filters(f -> f.rewritePath("/comment-service/(?<remaining>.*)", "/${remaining}"))
                 .uri(commentUri))
 
+            // POST /api/comments/player/:id (Any)
+            .route("create-comment", r -> r.path("/comment-service/api/comments/player/{id}")
+                .and().method("POST")
+                .filters(f -> f.rewritePath("/comment-service/(?<remaining>.*)", "/${remaining}"))
+                .uri(commentUri))
+
             .build();
     }
 }
