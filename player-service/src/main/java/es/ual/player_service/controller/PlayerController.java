@@ -1,6 +1,7 @@
 package es.ual.player_service.controller;
 
 import es.ual.player_service.domain.Player;
+import es.ual.player_service.domain.ExternalPlayer;
 import es.ual.player_service.repository.PlayerRepository;
 import es.ual.player_service.exception.PlayerNotFoundException;
 import io.swagger.v3.oas.annotations.Operation;
@@ -8,6 +9,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,10 +26,16 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.client.RestClient;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.ArrayList;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api")
@@ -37,13 +45,21 @@ public class PlayerController {
     @Autowired
     private PlayerRepository playerRepository;
 
-    @Operation(summary = "Get players by filters", description = "Retrieves a list of players filtered by name, team or league, and creation date range")
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    private final RestClient restClient = RestClient.create("https://v3.football.api-sports.io");
+
+    @Operation(
+        summary = "Get players by filters",
+        description = "Retrieves a list of players filtered by name, team or league, and creation date range"
+    )
     @ApiResponse(
         responseCode = "200",
         description = "Players list obtained",
         content = @Content(
             mediaType = MediaType.APPLICATION_JSON_VALUE,
-            examples = @ExampleObject(value = "[{\"id\": 1, \"name\": \"Neymar\", \"firstName\": \"Neymar\", \"lastName\": \"da Silva Santos Júnior\", \"age\": 28, \"birthdate\": \"1992-02-05\", \"nationality\": \"Brazil\", \"height\": 1.75, \"weight\": 68.00, \"number\": 10, \"team\": \"Paris Saint Germain\", \"league\": \"Ligue 1\", \"position\": \"Attacker\", \"photoUrl\": \"https://media.api-sports.io/football/players/276.png\", \"latitude\": 48.8566, \"longitude\": 2.3522, \"createdAt\": \"2026-05-27T12:00:00\"}]")
+            examples = @ExampleObject(value = "[{\"id\": 1, \"name\": \"Neymar\", \"firstName\": \"Neymar\", \"lastName\": \"da Silva Santos Júnior\", \"age\": 34, \"birthdate\": \"1992-02-05\", \"nationality\": \"Brazil\", \"height\": 1.75, \"weight\": 68.00, \"number\": 10, \"team\": \"Paris Saint Germain\", \"league\": \"Ligue 1\", \"position\": \"Attacker\", \"photoUrl\": \"https://media.api-sports.io/football/players/276.png\", \"latitude\": 48.8566, \"longitude\": 2.3522, \"createdAt\": \"2026-05-27T12:00:00\"}]")
         )
     )
     @GetMapping(value = "/players", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -61,19 +77,19 @@ public class PlayerController {
     }
 
     @Operation(
-        summary = "Get player by ID", 
+        summary = "Get player by ID",
         description = "Retrieves a single player's details by its unique identifier."
     )
     @ApiResponse(
-        responseCode = "200", 
+        responseCode = "200",
         description = "Player found",
         content = @Content(
             mediaType = MediaType.APPLICATION_JSON_VALUE,
-            examples = @ExampleObject(value = "{\"id\": 1, \"name\": \"Neymar\", \"firstName\": \"Neymar\", \"lastName\": \"da Silva Santos Júnior\", \"age\": 28, \"birthdate\": \"1992-02-05\", \"nationality\": \"Brazil\", \"height\": 1.75, \"weight\": 68.00, \"number\": 10, \"team\": \"Paris Saint Germain\", \"league\": \"Ligue 1\", \"position\": \"Attacker\", \"photoUrl\": \"https://media.api-sports.io/football/players/276.png\", \"latitude\": 48.8566, \"longitude\": 2.3522, \"createdAt\": \"2026-05-27T12:00:00\"}")
+            examples = @ExampleObject(value = "{\"id\": 1, \"name\": \"Neymar\", \"firstName\": \"Neymar\", \"lastName\": \"da Silva Santos Júnior\", \"age\": 34, \"birthdate\": \"1992-02-05\", \"nationality\": \"Brazil\", \"height\": 1.75, \"weight\": 68.00, \"number\": 10, \"team\": \"Paris Saint Germain\", \"league\": \"Ligue 1\", \"position\": \"Attacker\", \"photoUrl\": \"https://media.api-sports.io/football/players/276.png\", \"latitude\": 48.8566, \"longitude\": 2.3522, \"createdAt\": \"2026-05-27T12:00:00\"}")
         )
     )
     @ApiResponse(
-        responseCode = "404", 
+        responseCode = "404",
         description = "Error: Player not found",
         content = @Content(
             mediaType = MediaType.APPLICATION_JSON_VALUE,
@@ -90,7 +106,7 @@ public class PlayerController {
     }
 
     @Operation(
-        summary = "Create a new player", 
+        summary = "Create a new player",
         description = "Registers a new player in the system. The 'createdAt' field is set automatically by the server."
     )
     @ApiResponse(
@@ -98,12 +114,13 @@ public class PlayerController {
         description = "Player created successfully",
         content = @Content(
             mediaType = MediaType.APPLICATION_JSON_VALUE,
-            examples = @ExampleObject(value = "{\"id\": 1, \"name\": \"Neymar\", \"firstName\": \"Neymar\", \"lastName\": \"da Silva Santos Júnior\", \"age\": 28, \"birthdate\": \"1992-02-05\", \"nationality\": \"Brazil\", \"height\": 1.75, \"weight\": 68.00, \"number\": 10, \"team\": \"Paris Saint Germain\", \"league\": \"Ligue 1\", \"position\": \"Attacker\", \"photoUrl\": \"https://media.api-sports.io/football/players/276.png\", \"latitude\": 48.8566, \"longitude\": 2.3522, \"createdAt\": \"2026-05-27T12:00:00\"}")
+            examples = @ExampleObject(value = "{\"id\": 1, \"name\": \"Neymar\", \"firstName\": \"Neymar\", \"lastName\": \"da Silva Santos Júnior\", \"age\": 34, \"birthdate\": \"1992-02-05\", \"nationality\": \"Brazil\", \"height\": 1.75, \"weight\": 68.00, \"number\": 10, \"team\": \"Paris Saint Germain\", \"league\": \"Ligue 1\", \"position\": \"Attacker\", \"photoUrl\": \"https://media.api-sports.io/football/players/276.png\", \"latitude\": 48.8566, \"longitude\": 2.3522, \"createdAt\": \"2026-05-27T12:00:00\"}")
         )
     )
     @ApiResponse(
         responseCode = "401",
-        description = "Error: Unauthorized"
+        description = "Error: Unauthorized",
+        content = @Content(schema = @Schema(hidden = true))
     )
     @PostMapping(value = "/players", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Player> createPlayer(
@@ -111,7 +128,7 @@ public class PlayerController {
                 description = "Player object to be created",
                 required = true,
                 content = @Content(
-                    examples = @ExampleObject(value = "{\"name\": \"Neymar\", \"firstName\": \"Neymar\", \"lastName\": \"da Silva Santos Júnior\", \"age\": 28, \"birthdate\": \"1992-02-05\", \"nationality\": \"Brazil\", \"height\": 1.75, \"weight\": 68.00, \"number\": 10, \"team\": \"Paris Saint Germain\", \"league\": \"Ligue 1\", \"position\": \"Attacker\", \"photoUrl\": \"https://media.api-sports.io/football/players/276.png\", \"latitude\": 48.8566, \"longitude\": 2.3522}")
+                    examples = @ExampleObject(value = "{\"name\": \"Neymar\", \"firstName\": \"Neymar\", \"lastName\": \"da Silva Santos Júnior\", \"age\": 34, \"birthdate\": \"1992-02-05\", \"nationality\": \"Brazil\", \"height\": 1.75, \"weight\": 68.00, \"number\": 10, \"team\": \"Paris Saint Germain\", \"league\": \"Ligue 1\", \"position\": \"Attacker\", \"photoUrl\": \"https://media.api-sports.io/football/players/276.png\", \"latitude\": 48.8566, \"longitude\": 2.3522}")
                 )
             )
             @Valid @RequestBody Player player) {
@@ -121,19 +138,19 @@ public class PlayerController {
     }
 
     @Operation(
-        summary = "Update an existing player", 
+        summary = "Update an existing player",
         description = "Updates all fields of a player. The 'createdAt' field is preserved."
     )
     @ApiResponse(
-        responseCode = "200", 
+        responseCode = "200",
         description = "Player updated successfully",
         content = @Content(
             mediaType = MediaType.APPLICATION_JSON_VALUE,
-            examples = @ExampleObject(value = "{\"id\": 1, \"name\": \"Neymar\", \"firstName\": \"Neymar\", \"lastName\": \"da Silva Santos Júnior\", \"age\": 28, \"birthdate\": \"1992-02-05\", \"nationality\": \"Brazil\", \"height\": 1.75, \"weight\": 68.00, \"number\": 10, \"team\": \"Paris Saint Germain\", \"league\": \"Ligue 1\", \"position\": \"Attacker\", \"photoUrl\": \"https://media.api-sports.io/football/players/276.png\", \"latitude\": 48.8566, \"longitude\": 2.3522, \"createdAt\": \"2026-05-27T12:00:00\"}")
+            examples = @ExampleObject(value = "{\"id\": 1, \"name\": \"Neymar\", \"firstName\": \"Neymar\", \"lastName\": \"da Silva Santos Júnior\", \"age\": 34, \"birthdate\": \"1992-02-05\", \"nationality\": \"Brazil\", \"height\": 1.75, \"weight\": 68.00, \"number\": 10, \"team\": \"Paris Saint Germain\", \"league\": \"Ligue 1\", \"position\": \"Attacker\", \"photoUrl\": \"https://media.api-sports.io/football/players/276.png\", \"latitude\": 48.8566, \"longitude\": 2.3522, \"createdAt\": \"2026-05-27T12:00:00\"}")
         )
     )
     @ApiResponse(
-        responseCode = "404", 
+        responseCode = "404",
         description = "Error: Player not found",
         content = @Content(
             mediaType = MediaType.APPLICATION_JSON_VALUE,
@@ -142,11 +159,13 @@ public class PlayerController {
     )
     @ApiResponse(
         responseCode = "401",
-        description = "Error: Unauthorized"
+        description = "Error: Unauthorized",
+        content = @Content(schema = @Schema(hidden = true))
     )
     @ApiResponse(
         responseCode = "403",
-        description = "Error: Forbidden"
+        description = "Error: Forbidden",
+        content = @Content(schema = @Schema(hidden = true))
     )
     @PutMapping(value = "/players/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Player> updatePlayer(
@@ -156,7 +175,7 @@ public class PlayerController {
                 description = "Updated player object",
                 required = true,
                 content = @Content(
-                    examples = @ExampleObject(value = "{\"name\": \"Neymar\", \"firstName\": \"Neymar\", \"lastName\": \"da Silva Santos Júnior\", \"age\": 28, \"birthdate\": \"1992-02-05\", \"nationality\": \"Brazil\", \"height\": 1.75, \"weight\": 68.00, \"number\": 10, \"team\": \"Paris Saint Germain\", \"league\": \"Ligue 1\", \"position\": \"Attacker\", \"photoUrl\": \"https://media.api-sports.io/football/players/276.png\", \"latitude\": 48.8566, \"longitude\": 2.3522}")
+                    examples = @ExampleObject(value = "{\"name\": \"Neymar\", \"firstName\": \"Neymar\", \"lastName\": \"da Silva Santos Júnior\", \"age\": 34, \"birthdate\": \"1992-02-05\", \"nationality\": \"Brazil\", \"height\": 1.75, \"weight\": 68.00, \"number\": 10, \"team\": \"Paris Saint Germain\", \"league\": \"Ligue 1\", \"position\": \"Attacker\", \"photoUrl\": \"https://media.api-sports.io/football/players/276.png\", \"latitude\": 48.8566, \"longitude\": 2.3522}")
                 )
             )
             @Valid @RequestBody Player playerDetails) {
@@ -184,15 +203,15 @@ public class PlayerController {
     }
 
     @Operation(
-        summary = "Delete a player", 
+        summary = "Delete a player",
         description = "Removes a player from the system by its unique identifier."
     )
     @ApiResponse(
-        responseCode = "204", 
+        responseCode = "204",
         description = "Player deleted successfully"
     )
     @ApiResponse(
-        responseCode = "404", 
+        responseCode = "404",
         description = "Error: Player not found",
         content = @Content(
             mediaType = MediaType.APPLICATION_JSON_VALUE,
@@ -201,11 +220,13 @@ public class PlayerController {
     )
     @ApiResponse(
         responseCode = "401",
-        description = "Error: Unauthorized"
+        description = "Error: Unauthorized",
+        content = @Content(schema = @Schema(hidden = true))
     )
     @ApiResponse(
         responseCode = "403",
-        description = "Error: Forbidden"
+        description = "Error: Forbidden",
+        content = @Content(schema = @Schema(hidden = true))
     )
     @DeleteMapping(value = "/players/{id}")
     public ResponseEntity<Void> deletePlayer(
@@ -216,5 +237,69 @@ public class PlayerController {
         }
         playerRepository.deleteById(id);
         return ResponseEntity.noContent().build();
+    }
+
+
+    @Operation(
+        summary = "Search players in external API",
+        description = "Searches for players in the external football API. Requires a minimum of 3 characters for the query parameter."
+    )
+    @ApiResponse(
+        responseCode = "200",
+        description = "List of external players found",
+        content = @Content(
+            mediaType = MediaType.APPLICATION_JSON_VALUE,
+            examples = @ExampleObject(value = "[{\"id\": 276, \"name\": \"Neymar\", \"first_name\": \"Neymar\", \"last_name\": \"da Silva Santos Júnior\", \"age\": 34, \"birthdate\": \"1992-02-05\", \"nationality\": \"Brazil\", \"height\": 1.75, \"weight\": 68.00, \"number\": 10, \"position\": \"Attacker\", \"photo_url\": \"https://media.api-sports.io/football/players/276.png\"}]")
+        )
+    )
+    @ApiResponse(
+        responseCode = "401",
+        description = "Error: Unauthorized",
+        content = @Content(schema = @Schema(hidden = true))
+    )
+    @ApiResponse(
+        responseCode = "403",
+        description = "Error: Forbidden",
+        content = @Content(schema = @Schema(hidden = true))
+    )
+    @GetMapping("/players/search")
+    public ResponseEntity<List<ExternalPlayer>> searchExternalPlayers(
+            @Parameter(description = "Search term (min. 3 characters)")
+            @RequestParam(required = false) String query) throws Exception {
+        String searchParam = (query != null && query.length() >= 3) ? query : null;
+        String jsonResponse = restClient.get()
+                .uri(uriBuilder -> uriBuilder.path("/players/profiles")
+                        .queryParamIfPresent("search", Optional.ofNullable(searchParam))
+                        .build())
+                .header("x-rapidapi-key", System.getenv("FOOTBALL_API_KEY"))
+                .retrieve()
+                .body(String.class);
+        JsonNode root = objectMapper.readTree(jsonResponse);
+        JsonNode playersNode = root.get("response");
+        List<ExternalPlayer> results = new ArrayList<>();
+        for (JsonNode item : playersNode) {
+            JsonNode p = item.get("player");
+            JsonNode hNode = p.get("height");
+            Double height = (hNode != null && !hNode.isNull()) ? Double.parseDouble(hNode.asText().replaceAll("[^0-9]", "")) / 100.0 : null;
+            JsonNode wNode = p.get("weight");
+            Double weight = (wNode != null && !wNode.isNull()) ? Double.parseDouble(wNode.asText().replaceAll("[^0-9]", "")) : null;
+            JsonNode bNode = p.at("/birth/date");
+            LocalDate birthdate = (bNode != null && !bNode.isNull() && !bNode.asText().isEmpty()) ? LocalDate.parse(bNode.asText()) : null;
+            results.add(new ExternalPlayer(
+                p.get("id").asLong(),
+                p.get("name").asText(),
+                p.get("firstname").asText(null),
+                p.get("lastname").asText(null),
+                p.hasNonNull("age") ? p.get("age").asInt() : null,
+                birthdate,
+                p.get("nationality").asText(null),
+                height,
+                weight,
+                p.hasNonNull("number") ? p.get("number").asInt() : null,
+                p.get("position").asText(null),
+                p.get("photo").asText(null)
+            ));
+        }
+        return ResponseEntity.ok(results);
     }
 }
