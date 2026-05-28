@@ -23,6 +23,10 @@ public class JwtAuthenticationFilter implements GatewayFilter {
             .maximumSize(1000)
             .build();
 
+    public JwtAuthenticationFilter() {
+        this.requiredRole = null;
+    }
+
     public JwtAuthenticationFilter(String requiredRole) {
         this.requiredRole = requiredRole;
     }
@@ -31,7 +35,7 @@ public class JwtAuthenticationFilter implements GatewayFilter {
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         String auth = exchange.getRequest().getHeaders().getFirst("Authorization");
         if (auth == null || !auth.startsWith("Bearer ")) {
-            return unauthorized(exchange);
+            return chain.filter(exchange);
         }
         return Mono.fromCallable(() -> FirebaseAuth.getInstance().verifyIdToken(auth.substring(7)))
             .subscribeOn(Schedulers.boundedElastic())

@@ -7,8 +7,8 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @RestControllerAdvice
 public class ControllerExceptionHandler {
 
-    @ExceptionHandler(PlayerNotFoundException.class)
-    public ResponseEntity<CustomResponse> handlePlayerNotFound(PlayerNotFoundException ex) {
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<CustomResponse> handleResourceNotFound(ResourceNotFoundException ex) {
         CustomResponse resp = new CustomResponse(ex.getReason());
         return new ResponseEntity<>(resp, ex.getStatusCode());
     }

@@ -2,13 +2,16 @@ package es.ual.comment_service.controller;
 
 import es.ual.comment_service.domain.Comment;
 import es.ual.comment_service.repository.CommentRepository;
-import es.ual.comment_service.dto.CommentRequest;
-import es.ual.comment_service.exception.PlayerNotFoundException;
+import es.ual.comment_service.dto.CommentRequestDTO;
+import es.ual.comment_service.client.PlayerClient;
+import es.ual.comment_service.exception.ResourceNotFoundException;
+import feign.FeignException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -22,7 +25,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.client.RestClient;
+import org.springframework.web.bind.annotation.DeleteMapping;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -37,21 +40,7 @@ public class CommentController {
     private CommentRepository commentRepository;
 
     @Autowired
-    @Qualifier("loadBalancedBuilder")
-    private RestClient.Builder restClientBuilder;
-
-    private void checkPlayerExists(Long id) {
-        try {
-            restClientBuilder.build().get()
-                .uri("http://player-service/api/players/{id}", id)
-                .retrieve()
-                .toBodilessEntity();
-        } catch (org.springframework.web.client.HttpClientErrorException.NotFound e) {
-            throw new PlayerNotFoundException(HttpStatus.NOT_FOUND, "Player not found with id: " + id);
-        } catch (Exception e) {
-            throw new RuntimeException("Service temporarily unavailable");
-        }
-    }
+    private PlayerClient playerClient;
 
     @Operation(
         summary = "Get comments by player ID",
@@ -65,24 +54,15 @@ public class CommentController {
             examples = @ExampleObject(value = "[{\"id\": 1, \"userId\": \"firebase_uid_123\", \"playerId\": 1, \"author\": \"user@example.com\", \"text\": \"Amazing player!\", \"rating\": 5, \"latitude\": -23.944841, \"longitude\": -46.330376, \"createdAt\": \"2026-05-27T12:00:00\"}]")
         )
     )
-    @ApiResponse(
-        responseCode = "404",
-        description = "Error: Player not found",
-        content = @Content(
-            mediaType = MediaType.APPLICATION_JSON_VALUE,
-            examples = @ExampleObject(value = "{\"timestamp\": \"2026-05-27 12:00:00\", \"error\": \"Player not found with id: 1\"}")
-        )
-    )
     @GetMapping(value = "/comments/player/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<Comment>> getCommentsByPlayer(
             @Parameter(description = "Unique ID of the player to retrieve comments for", required = true) 
             @PathVariable Long id) {
-        checkPlayerExists(id);
         List<Comment> comments = commentRepository.findByPlayerId(id);
         return ResponseEntity.ok(comments);
     }
 
-@Operation(
+    @Operation(
         summary = "Create a new comment",
         description = "Creates a comment for a player. If not authenticated, user is set as null and author as 'anonymous'."
     )
@@ -117,8 +97,14 @@ public class CommentController {
                     examples = @ExampleObject(value = "{\"text\": \"Amazing player!\", \"rating\": 5, \"latitude\": -23.944841, \"longitude\": -46.330376}")
                 )
             )
-            @RequestBody CommentRequest req) {
-        checkPlayerExists(id);
+            @RequestBody CommentRequestDTO req) {
+        try {
+            playerClient.getPlayerById(id);
+        } catch (FeignException.NotFound e) {
+            throw new ResourceNotFoundException(HttpStatus.NOT_FOUND, "Player not found with id: " + id);
+        } catch (Exception e) {
+            throw new RuntimeException("Service temporarily unavailable");
+        }
         Comment comment = new Comment();
         comment.setPlayerId(id);
         if (userId != null && !userId.isEmpty() && userEmail != null && !userEmail.isEmpty()) {
@@ -134,5 +120,42 @@ public class CommentController {
         comment.setLongitude(req.longitude() != null ? BigDecimal.valueOf(req.longitude()) : null);
         comment.setCreatedAt(LocalDateTime.now());
         return new ResponseEntity<>(commentRepository.save(comment), HttpStatus.CREATED);
+    }
+
+    @Operation(
+        summary = "Delete a comment",
+        description = "Removes a comment from the system by its unique identifier."
+    )
+    @ApiResponse(
+        responseCode = "204",
+        description = "Comment deleted successfully"
+    )
+    @ApiResponse(
+        responseCode = "404",
+        description = "Error: Comment not found",
+        content = @Content(
+            mediaType = MediaType.APPLICATION_JSON_VALUE,
+            examples = @ExampleObject(value = "{\"timestamp\": \"2026-05-27 12:00:00\", \"error\": \"Comment not found with id: 1\"}")
+        )
+    )
+    @ApiResponse(
+        responseCode = "401",
+        description = "Error: Unauthorized",
+        content = @Content(schema = @Schema(hidden = true))
+    )
+    @ApiResponse(
+        responseCode = "403",
+        description = "Error: Forbidden",
+        content = @Content(schema = @Schema(hidden = true))
+    )
+    @DeleteMapping(value = "/comments/{id}")
+    public ResponseEntity<Void> deleteComment(
+            @Parameter(description = "Unique ID of the comment to delete", required = true) 
+            @PathVariable Long id) {
+        if (!commentRepository.existsById(id)) {
+            throw new ResourceNotFoundException(HttpStatus.NOT_FOUND, "Comment not found with id: " + id);
+        }
+        commentRepository.deleteById(id);
+        return ResponseEntity.noContent().build();
     }
 }

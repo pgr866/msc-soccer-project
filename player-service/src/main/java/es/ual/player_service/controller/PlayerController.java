@@ -1,9 +1,13 @@
 package es.ual.player_service.controller;
 
 import es.ual.player_service.domain.Player;
-import es.ual.player_service.dto.ExternalPlayer;
-import es.ual.player_service.dto.PlayersImportRequest;
+import es.ual.player_service.dto.ExternalPlayerDTO;
+import es.ual.player_service.dto.PlayersImportRequestDTO;
+import es.ual.player_service.dto.CommentDTO;
+import es.ual.player_service.dto.PlayerWithCommentsDTO;
 import es.ual.player_service.repository.PlayerRepository;
+import es.ual.player_service.client.CommentClient;
+import es.ual.player_service.service.ExternalPlayerService;
 import es.ual.player_service.exception.PlayerNotFoundException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -25,18 +29,13 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.client.RestClient;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.http.HttpStatus;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.ArrayList;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api")
@@ -47,9 +46,10 @@ public class PlayerController {
     private PlayerRepository playerRepository;
 
     @Autowired
-    private ObjectMapper objectMapper;
+    private CommentClient commentClient;
 
-    private final RestClient restClient = RestClient.create("https://v3.football.api-sports.io");
+    @Autowired
+    private ExternalPlayerService externalPlayerService;
 
     @Operation(
         summary = "Get players by filters",
@@ -60,7 +60,7 @@ public class PlayerController {
         description = "Players list obtained",
         content = @Content(
             mediaType = MediaType.APPLICATION_JSON_VALUE,
-            examples = @ExampleObject(value = "[{\"id\": 1, \"name\": \"Neymar\", \"firstName\": \"Neymar\", \"lastName\": \"da Silva Santos Júnior\", \"age\": 34, \"birthdate\": \"1992-02-05\", \"nationality\": \"Brazil\", \"height\": 1.75, \"weight\": 68.00, \"number\": 10, \"team\": \"Santos\", \"league\": \"Serie A\", \"position\": \"Attacker\", \"photoUrl\": \"https://media.api-sports.io/football/players/276.png\", \"latitude\": -23.944841, \"longitude\": -46.330376, \"createdAt\": \"2026-05-27T12:00:00\"}]")
+            examples = @ExampleObject(value = "[{\"id\": 1, \"name\": \"Neymar\", \"firstName\": \"Neymar\", \"lastName\": \"da Silva Santos Júnior\", \"age\": 34, \"birthdate\": \"1992-02-05\", \"nationality\": \"Brazil\", \"height\": 1.75, \"weight\": 68, \"number\": 10, \"team\": \"Santos\", \"league\": \"Serie A\", \"position\": \"Attacker\", \"photoUrl\": \"https://media.api-sports.io/football/players/276.png\", \"latitude\": -23.944841, \"longitude\": -46.330376, \"createdAt\": \"2026-05-27T12:00:00\"}]")
         )
     )
     @GetMapping(value = "/players", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -78,15 +78,18 @@ public class PlayerController {
     }
 
     @Operation(
-        summary = "Get player by ID",
-        description = "Retrieves a single player's details by its unique identifier."
+        summary = "Get player by ID with comments",
+        description = "Retrieves a player's details along with all associated comments."
     )
     @ApiResponse(
         responseCode = "200",
-        description = "Player found",
+        description = "Player and comments found",
         content = @Content(
             mediaType = MediaType.APPLICATION_JSON_VALUE,
-            examples = @ExampleObject(value = "{\"id\": 1, \"name\": \"Neymar\", \"firstName\": \"Neymar\", \"lastName\": \"da Silva Santos Júnior\", \"age\": 34, \"birthdate\": \"1992-02-05\", \"nationality\": \"Brazil\", \"height\": 1.75, \"weight\": 68.00, \"number\": 10, \"team\": \"Santos\", \"league\": \"Serie A\", \"position\": \"Attacker\", \"photoUrl\": \"https://media.api-sports.io/football/players/276.png\", \"latitude\": -23.944841, \"longitude\": -46.330376, \"createdAt\": \"2026-05-27T12:00:00\"}")
+            examples = @ExampleObject(value = "{" +
+                "\"player\": {\"id\": 1, \"name\": \"Neymar\", \"firstName\": \"Neymar\", \"lastName\": \"da Silva Santos Júnior\", \"age\": 34, \"birthdate\": \"1992-02-05\", \"nationality\": \"Brazil\", \"height\": 1.75, \"weight\": 68, \"number\": 10, \"team\": \"Santos\", \"league\": \"Serie A\", \"position\": \"Attacker\", \"photoUrl\": \"https://media.api-sports.io/football/players/276.png\", \"latitude\": -23.944841, \"longitude\": -46.330376, \"createdAt\": \"2026-05-27T12:00:00\"}," +
+                "\"comments\": [{\"id\": 1, \"userId\": null, \"playerId\": 1, \"author\": \"anonymous\", \"text\": \"Amazing player!\", \"rating\": 5, \"latitude\": -23.944841, \"longitude\": -46.330376, \"createdAt\": \"2026-05-27T12:00:00\"}]" +
+                "}")
         )
     )
     @ApiResponse(
@@ -98,12 +101,16 @@ public class PlayerController {
         )
     )
     @GetMapping(value = "/players/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Player> getPlayerById(
-            @Parameter(description = "Unique ID of the player to retrieve", required = true) 
-            @PathVariable Long id) {
-        return playerRepository.findById(id)
-                .map(ResponseEntity::ok)
-                .orElseThrow(() -> new PlayerNotFoundException(HttpStatus.NOT_FOUND, "Player not found with id: " + id));
+    public ResponseEntity<PlayerWithCommentsDTO> getPlayerById(@PathVariable Long id) {
+        Player player = playerRepository.findById(id)
+                .orElseThrow(() -> new PlayerNotFoundException(HttpStatus.NOT_FOUND, "Player not found"));
+        List<CommentDTO> comments;
+        try {
+            comments = commentClient.getCommentsByPlayerId(id);
+        } catch (Exception e) {
+            comments = List.of(); 
+        }
+        return ResponseEntity.ok(new PlayerWithCommentsDTO(player, comments));
     }
 
     @Operation(
@@ -115,7 +122,7 @@ public class PlayerController {
         description = "Player created successfully",
         content = @Content(
             mediaType = MediaType.APPLICATION_JSON_VALUE,
-            examples = @ExampleObject(value = "{\"id\": 1, \"name\": \"Neymar\", \"firstName\": \"Neymar\", \"lastName\": \"da Silva Santos Júnior\", \"age\": 34, \"birthdate\": \"1992-02-05\", \"nationality\": \"Brazil\", \"height\": 1.75, \"weight\": 68.00, \"number\": 10, \"team\": \"Santos\", \"league\": \"Serie A\", \"position\": \"Attacker\", \"photoUrl\": \"https://media.api-sports.io/football/players/276.png\", \"latitude\": -23.944841, \"longitude\": -46.330376, \"createdAt\": \"2026-05-27T12:00:00\"}")
+            examples = @ExampleObject(value = "{\"id\": 1, \"name\": \"Neymar\", \"firstName\": \"Neymar\", \"lastName\": \"da Silva Santos Júnior\", \"age\": 34, \"birthdate\": \"1992-02-05\", \"nationality\": \"Brazil\", \"height\": 1.75, \"weight\": 68, \"number\": 10, \"team\": \"Santos\", \"league\": \"Serie A\", \"position\": \"Attacker\", \"photoUrl\": \"https://media.api-sports.io/football/players/276.png\", \"latitude\": -23.944841, \"longitude\": -46.330376, \"createdAt\": \"2026-05-27T12:00:00\"}")
         )
     )
     @ApiResponse(
@@ -129,7 +136,7 @@ public class PlayerController {
                 description = "Player object to be created",
                 required = true,
                 content = @Content(
-                    examples = @ExampleObject(value = "{\"name\": \"Neymar\", \"firstName\": \"Neymar\", \"lastName\": \"da Silva Santos Júnior\", \"age\": 34, \"birthdate\": \"1992-02-05\", \"nationality\": \"Brazil\", \"height\": 1.75, \"weight\": 68.00, \"number\": 10, \"team\": \"Santos\", \"league\": \"Serie A\", \"position\": \"Attacker\", \"photoUrl\": \"https://media.api-sports.io/football/players/276.png\", \"latitude\": -23.944841, \"longitude\": -46.330376}")
+                    examples = @ExampleObject(value = "{\"name\": \"Neymar\", \"firstName\": \"Neymar\", \"lastName\": \"da Silva Santos Júnior\", \"age\": 34, \"birthdate\": \"1992-02-05\", \"nationality\": \"Brazil\", \"height\": 1.75, \"weight\": 68, \"number\": 10, \"team\": \"Santos\", \"league\": \"Serie A\", \"position\": \"Attacker\", \"photoUrl\": \"https://media.api-sports.io/football/players/276.png\", \"latitude\": -23.944841, \"longitude\": -46.330376}")
                 )
             )
             @Valid @RequestBody Player player) {
@@ -147,7 +154,7 @@ public class PlayerController {
         description = "Player updated successfully",
         content = @Content(
             mediaType = MediaType.APPLICATION_JSON_VALUE,
-            examples = @ExampleObject(value = "{\"id\": 1, \"name\": \"Neymar\", \"firstName\": \"Neymar\", \"lastName\": \"da Silva Santos Júnior\", \"age\": 34, \"birthdate\": \"1992-02-05\", \"nationality\": \"Brazil\", \"height\": 1.75, \"weight\": 68.00, \"number\": 10, \"team\": \"Santos\", \"league\": \"Serie A\", \"position\": \"Attacker\", \"photoUrl\": \"https://media.api-sports.io/football/players/276.png\", \"latitude\": -23.944841, \"longitude\": -46.330376, \"createdAt\": \"2026-05-27T12:00:00\"}")
+            examples = @ExampleObject(value = "{\"id\": 1, \"name\": \"Neymar\", \"firstName\": \"Neymar\", \"lastName\": \"da Silva Santos Júnior\", \"age\": 34, \"birthdate\": \"1992-02-05\", \"nationality\": \"Brazil\", \"height\": 1.75, \"weight\": 68, \"number\": 10, \"team\": \"Santos\", \"league\": \"Serie A\", \"position\": \"Attacker\", \"photoUrl\": \"https://media.api-sports.io/football/players/276.png\", \"latitude\": -23.944841, \"longitude\": -46.330376, \"createdAt\": \"2026-05-27T12:00:00\"}")
         )
     )
     @ApiResponse(
@@ -176,7 +183,7 @@ public class PlayerController {
                 description = "Updated player object",
                 required = true,
                 content = @Content(
-                    examples = @ExampleObject(value = "{\"name\": \"Neymar\", \"firstName\": \"Neymar\", \"lastName\": \"da Silva Santos Júnior\", \"age\": 34, \"birthdate\": \"1992-02-05\", \"nationality\": \"Brazil\", \"height\": 1.75, \"weight\": 68.00, \"number\": 10, \"team\": \"Santos\", \"league\": \"Serie A\", \"position\": \"Attacker\", \"photoUrl\": \"https://media.api-sports.io/football/players/276.png\", \"latitude\": -23.944841, \"longitude\": -46.330376}")
+                    examples = @ExampleObject(value = "{\"name\": \"Neymar\", \"firstName\": \"Neymar\", \"lastName\": \"da Silva Santos Júnior\", \"age\": 34, \"birthdate\": \"1992-02-05\", \"nationality\": \"Brazil\", \"height\": 1.75, \"weight\": 68, \"number\": 10, \"team\": \"Santos\", \"league\": \"Serie A\", \"position\": \"Attacker\", \"photoUrl\": \"https://media.api-sports.io/football/players/276.png\", \"latitude\": -23.944841, \"longitude\": -46.330376}")
                 )
             )
             @Valid @RequestBody Player playerDetails) {
@@ -240,19 +247,6 @@ public class PlayerController {
         return ResponseEntity.noContent().build();
     }
 
-    private LocalDate parseExternalDate(String dateStr) {
-        if (dateStr == null || dateStr.isEmpty()) return null;
-        try {
-            return LocalDate.parse(dateStr);
-        } catch (Exception e) {
-            String[] parts = dateStr.split("-");
-            String year = parts[0];
-            String month = String.format("%02d", Integer.parseInt(parts[1])); // Asegura 2 dígitos
-            String day = String.format("%02d", Integer.parseInt(parts[2]));   // Asegura 2 dígitos
-            return LocalDate.parse(year + "-" + month + "-" + day);
-        }
-    }
-
     @Operation(
         summary = "Search players in external API",
         description = "Searches for players in the external football API. Requires a minimum of 3 characters for the query parameter."
@@ -262,7 +256,7 @@ public class PlayerController {
         description = "List of external players found",
         content = @Content(
             mediaType = MediaType.APPLICATION_JSON_VALUE,
-            examples = @ExampleObject(value = "[{\"id\": 276, \"name\": \"Neymar\", \"first_name\": \"Neymar\", \"last_name\": \"da Silva Santos Júnior\", \"age\": 34, \"birthdate\": \"1992-02-05\", \"nationality\": \"Brazil\", \"height\": 1.75, \"weight\": 68.00, \"number\": 10, \"position\": \"Attacker\", \"photo_url\": \"https://media.api-sports.io/football/players/276.png\"}]")
+            examples = @ExampleObject(value = "[{\"id\": 276, \"name\": \"Neymar\", \"first_name\": \"Neymar\", \"last_name\": \"da Silva Santos Júnior\", \"age\": 34, \"birthdate\": \"1992-02-05\", \"nationality\": \"Brazil\", \"height\": 1.75, \"weight\": 68, \"number\": 10, \"position\": \"Attacker\", \"photo_url\": \"https://media.api-sports.io/football/players/276.png\"}]")
         )
     )
     @ApiResponse(
@@ -276,44 +270,11 @@ public class PlayerController {
         content = @Content(schema = @Schema(hidden = true))
     )
     @GetMapping("/players/search")
-    public ResponseEntity<List<ExternalPlayer>> searchExternalPlayers(
+    public ResponseEntity<List<ExternalPlayerDTO>> searchExternalPlayers(
             @Parameter(description = "Search term (min. 3 characters)")
             @RequestParam(required = false) String query) throws Exception {
         String searchParam = (query != null && query.length() >= 3) ? query : null;
-        String jsonResponse = restClient.get()
-                .uri(uriBuilder -> uriBuilder.path("/players/profiles")
-                        .queryParamIfPresent("search", Optional.ofNullable(searchParam))
-                        .build())
-                .header("x-rapidapi-key", System.getenv("FOOTBALL_API_KEY"))
-                .retrieve()
-                .body(String.class);
-        JsonNode root = objectMapper.readTree(jsonResponse);
-        JsonNode playersNode = root.get("response");
-        List<ExternalPlayer> results = new ArrayList<>();
-        for (JsonNode item : playersNode) {
-            JsonNode p = item.get("player");
-            JsonNode hNode = p.get("height");
-            Double height = (hNode != null && !hNode.isNull()) ? Double.parseDouble(hNode.asText().replaceAll("[^0-9]", "")) / 100.0 : null;
-            JsonNode wNode = p.get("weight");
-            Double weight = (wNode != null && !wNode.isNull()) ? Double.parseDouble(wNode.asText().replaceAll("[^0-9]", "")) : null;
-            JsonNode bNode = p.at("/birth/date");
-            LocalDate birthdate = (bNode != null && !bNode.isNull() && !bNode.asText().isEmpty()) ? parseExternalDate(bNode.asText()) : null;
-            results.add(new ExternalPlayer(
-                p.get("id").asLong(),
-                p.get("name").asText(),
-                p.get("firstname").asText(null),
-                p.get("lastname").asText(null),
-                p.hasNonNull("age") ? p.get("age").asInt() : null,
-                birthdate,
-                p.get("nationality").asText(null),
-                height,
-                weight,
-                p.hasNonNull("number") ? p.get("number").asInt() : null,
-                p.get("position").asText(null),
-                p.get("photo").asText(null)
-            ));
-        }
-        return ResponseEntity.ok(results);
+        return ResponseEntity.ok(externalPlayerService.searchPlayers(searchParam));
     }
 
     @Operation(
@@ -325,7 +286,14 @@ public class PlayerController {
         description = "Players imported and created successfully",
         content = @Content(
             mediaType = MediaType.APPLICATION_JSON_VALUE,
-            examples = @ExampleObject(value = "[{\"id\": 1, \"name\": \"Neymar\", \"firstName\": \"Neymar\", \"lastName\": \"da Silva Santos Júnior\", \"age\": 34, \"birthdate\": \"1992-02-05\", \"nationality\": \"Brazil\", \"height\": 1.75, \"weight\": 68.00, \"number\": 10, \"team\": \"Santos\", \"league\": \"Serie A\", \"position\": \"Attacker\", \"photoUrl\": \"https://media.api-sports.io/football/players/276.png\", \"latitude\": 40.0, \"longitude\": -3.0, \"createdAt\": \"2026-05-28T06:00:00\"}]")
+            examples = @ExampleObject(value = "[" +
+                "{" +
+                    "\"id\": 1, \"name\": \"Neymar\", \"firstName\": \"Neymar\", \"lastName\": \"da Silva Santos Júnior\", \"age\": 34, \"birthdate\": \"1992-02-05\", \"nationality\": \"Brazil\", \"height\": 1.75, \"weight\": 68, \"number\": 10, \"team\": \"Santos\", \"league\": \"Serie A\", \"position\": \"Attacker\", \"photoUrl\": \"https://media.api-sports.io/football/players/276.png\", \"latitude\": -23.944841, \"longitude\": -46.330376, \"createdAt\": \"2026-05-27T12:00:00\"" +
+                "}," +
+                "{" +
+                    "\"id\": 2, \"name\": \"Cristiano Ronaldo\", \"firstName\": \"Cristiano Ronaldo\", \"lastName\": \"dos Santos Aveiro\", \"age\": 41, \"birthdate\": \"1985-02-05\", \"nationality\": \"Portugal\", \"height\": 1.87, \"weight\": 83, \"number\": 7, \"team\": \"Al-Nassr\", \"league\": \"Pro League\", \"position\": \"Attacker\", \"photoUrl\": \"https://media.api-sports.io/football/players/874.png\", \"latitude\": -23.944841, \"longitude\": -46.330376, \"createdAt\": \"2026-05-27T12:00:00\"" +
+                "}" +
+            "]")
         )
     )
     @ApiResponse(
@@ -342,108 +310,15 @@ public class PlayerController {
                     examples = @ExampleObject(value = "{\"playerIds\": [276, 874], \"latitude\": -23.944841, \"longitude\": -46.330376}")
                 )
             )
-            @Valid @RequestBody PlayersImportRequest request) {
-        int currentYear = LocalDate.now().getYear();
+            @Valid @RequestBody PlayersImportRequestDTO request) {
         List<Player> importedPlayers = new ArrayList<>();
         for (Long playerId : request.playerIds()) {
             try {
-                String profileJson = restClient.get()
-                        .uri("/players/profiles?player={id}", playerId)
-                        .header("x-rapidapi-key", System.getenv("FOOTBALL_API_KEY"))
-                        .retrieve().body(String.class);
-                JsonNode playerItem = objectMapper.readTree(profileJson).get("response").get(0);
-                JsonNode p = playerItem.get("player");
-                Double height = (p.hasNonNull("height")) ? Double.parseDouble(p.get("height").asText().replaceAll("[^0-9]", "")) / 100.0 : null;
-                Double weight = (p.hasNonNull("weight")) ? Double.parseDouble(p.get("weight").asText().replaceAll("[^0-9]", "")) : null;
-                LocalDate birthdate = (p.at("/birth/date") != null && !p.at("/birth/date").isNull()) ? parseExternalDate(p.at("/birth/date").asText()) : null;
-                ExternalPlayer ep = new ExternalPlayer(
-                    p.get("id").asLong(), p.get("name").asText(), p.get("firstname").asText(null), 
-                    p.get("lastname").asText(null), p.hasNonNull("age") ? p.get("age").asInt() : null,
-                    birthdate, p.get("nationality").asText(null), height, weight,
-                    p.hasNonNull("number") ? p.get("number").asInt() : null, p.get("position").asText(null), p.get("photo").asText(null)
-                );
-
-                String teamsJson = restClient.get().uri("/players/teams?player={id}", ep.id())
-                        .header("x-rapidapi-key", System.getenv("FOOTBALL_API_KEY")).retrieve().body(String.class);
-                JsonNode teamsResponse = objectMapper.readTree(teamsJson).get("response");
-                String teamName = null;
-                String leagueName = null;
-                Long teamId = null;
-                int[] yearsToTry = {currentYear, currentYear - 1};
-                for (int year : yearsToTry) {
-                    boolean foundInYear = false;
-                    for (JsonNode t : teamsResponse) {
-                        JsonNode teamNode = t.get("team");
-                        JsonNode seasonsNode = t.get("seasons");
-                        boolean hasYear = false;
-                        for (JsonNode season : seasonsNode) {
-                            if (season.asInt() == year) {
-                                hasYear = true;
-                                break;
-                            }
-                        }
-                        if (hasYear && !teamNode.get("name").asText().contains(ep.nationality())) {
-                            teamName = teamNode.get("name").asText();
-                            teamId = teamNode.get("id").asLong();
-                            foundInYear = true;
-                            break;
-                        }
-                    }
-                    if (foundInYear) break;
-                }
-
-                if (teamId != null) {
-                    String leaguesJson = restClient.get().uri("/leagues?team={id}", teamId)
-                            .header("x-rapidapi-key", System.getenv("FOOTBALL_API_KEY")).retrieve().body(String.class);
-                    JsonNode leaguesResponse = objectMapper.readTree(leaguesJson).get("response");
-                    long maxDuration = -1;
-                    for (JsonNode l : leaguesResponse) {
-                        JsonNode league = l.get("league");
-                        if ("League".equals(league.get("type").asText()) && !"World".equals(l.get("country").get("name").asText())) {
-                            for (JsonNode s : l.get("seasons")) {
-                                int seasonYear = s.get("year").asInt();
-                                if (seasonYear == currentYear || seasonYear == currentYear - 1) {
-                                    LocalDate start = parseExternalDate(s.get("start").asText());
-                                    LocalDate end = parseExternalDate(s.get("end").asText());
-                                    long duration = java.time.temporal.ChronoUnit.DAYS.between(start, end);
-                                    if (duration > maxDuration) {
-                                        maxDuration = duration;
-                                        leagueName = league.get("name").asText();
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-
-                Byte age = (ep.age() != null) ? ep.age().byteValue() : null;
-                Byte number = (ep.number() != null) ? ep.number().byteValue() : null;
-                BigDecimal h = (ep.height() != null) ? BigDecimal.valueOf(ep.height()) : null;
-                BigDecimal w = (ep.weight() != null) ? BigDecimal.valueOf(ep.weight()) : null;
-                BigDecimal lat = BigDecimal.valueOf(request.latitude());
-                BigDecimal lon = BigDecimal.valueOf(request.longitude());
-                Player player = new Player();
-                player.setName(ep.name());
-                player.setFirstName(ep.first_name());
-                player.setLastName(ep.last_name());
-                player.setAge(age);
-                player.setBirthdate(ep.birthdate());
-                player.setNationality(ep.nationality());
-                player.setHeight(h);
-                player.setWeight(w);
-                player.setNumber(number);
-                player.setPosition(ep.position());
-                player.setPhotoUrl(ep.photo_url());
-                player.setTeam(teamName);
-                player.setLeague(leagueName);
-                player.setLatitude(lat);
-                player.setLongitude(lon);
-                player.setCreatedAt(LocalDateTime.now());
-                importedPlayers.add(playerRepository.save(player));
+                importedPlayers.add(externalPlayerService.importAndSavePlayer(playerId, request.latitude(), request.longitude()));
             } catch (Exception e) {
                 System.err.println("Error importing player with Id " + playerId + ": " + e.getMessage());
             }
         }
-        return new ResponseEntity<>(importedPlayers, HttpStatus.CREATED);
+        return ResponseEntity.status(HttpStatus.CREATED).body(importedPlayers);
     }
 }

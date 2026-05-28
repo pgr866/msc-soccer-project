@@ -42,7 +42,8 @@ public class RouteConfig {
             // GET /api/players (Any)
             .route("get-players", r -> r.path("/player-service/api/players")
                 .and().method("GET")
-                .filters(f -> f.rewritePath("/player-service/(?<remaining>.*)", "/${remaining}"))
+                .filters(f -> f.filter(new JwtAuthenticationFilter())
+                            .rewritePath("/player-service/(?<remaining>.*)", "/${remaining}"))
                 .uri(playerUri))
 
             // GET /api/players/search (Authenticated/Admin)
@@ -62,7 +63,8 @@ public class RouteConfig {
             // GET /api/players/:id (Any)
             .route("get-player", r -> r.path("/player-service/api/players/{id}")
                 .and().method("GET")
-                .filters(f -> f.rewritePath("/player-service/(?<remaining>.*)", "/${remaining}"))
+                .filters(f -> f.filter(new JwtAuthenticationFilter())
+                            .rewritePath("/player-service/(?<remaining>.*)", "/${remaining}"))
                 .uri(playerUri))
 
             // POST /api/players (Authenticated/Admin)
@@ -89,13 +91,22 @@ public class RouteConfig {
             // GET /api/comments/player/:id (Any)
             .route("get-comments-by-player", r -> r.path("/comment-service/api/comments/player/{id}")
                 .and().method("GET")
-                .filters(f -> f.rewritePath("/comment-service/(?<remaining>.*)", "/${remaining}"))
+                .filters(f -> f.filter(new JwtAuthenticationFilter())
+                            .rewritePath("/comment-service/(?<remaining>.*)", "/${remaining}"))
                 .uri(commentUri))
 
             // POST /api/comments/player/:id (Any)
             .route("create-comment", r -> r.path("/comment-service/api/comments/player/{id}")
                 .and().method("POST")
-                .filters(f -> f.rewritePath("/comment-service/(?<remaining>.*)", "/${remaining}"))
+                .filters(f -> f.filter(new JwtAuthenticationFilter())
+                            .rewritePath("/comment-service/(?<remaining>.*)", "/${remaining}"))
+                .uri(commentUri))
+
+            // DELETE /api/comments/:id (Admin)
+            .route("delete-comment", r -> r.path("/comment-service/api/comments/{id}")
+                .and().method("DELETE")
+                .filters(f -> f.filter(new JwtAuthenticationFilter("ADMIN"))
+                            .rewritePath("/comment-service/(?<remaining>.*)", "/${remaining}"))
                 .uri(commentUri))
 
             .build();
