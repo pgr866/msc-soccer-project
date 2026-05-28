@@ -117,20 +117,20 @@ administrador:
 
 ## Lista de endpoints
 
-| HttpVerb | Endpoint                 | Params                                | Response                   | Role                |
-| -------- | ------------------------ | ------------------------------------- | -------------------------- | ------------------- |
-| GET      | /api/players             | query?, dateStart?, dateEnd?          | 200 OK [Player]            | Any                 |
-| GET      | /api/players/:id         | id                                    | 200 OK {Player, [Comment]} | Any                 |
-| POST     | /api/players             | {Player}*                             | 201 Created {Player}       | Authenticated/Admin |
-| PUT      | /api/players/:id         | id, {Player}*                         | 200 OK {Player}            | Admin               |
-| DELETE   | /api/players/:id         | id                                    | 204 No Content             | Admin               |
-| GET      | /api/players/search      | query?                                | 200 OK [ExternalPlayer]    | Authenticated/Admin |
-| POST     | /api/players/import      | [ExternalPlayer], latitude, longitude | 201 Created [Player]       | Authenticated/Admin |
-| GET      | /api/comments/player/:id | id                                    | 200 OK [Comment]           | Any                 |
-| POST     | /api/comments/player/:id | id, {Comment}                         | 201 Created {Comment}      | Any                 |
-| DELETE   | /api/comments/:id        | id                                    | 204 No Content             | Admin               |
-| GET      | /api/dream-teams         | -                                     | 200 OK [DreamTeam]         | Authenticated/Admin |
-| POST     | /api/dream-teams         | -                                     | 201 Created {DreamTeam}    | Authenticated/Admin |
+| HttpVerb | Endpoint                 | Params                                   | Response                   | Role                |
+| -------- | ------------------------ | ---------------------------------------- | -------------------------- | ------------------- |
+| GET      | /api/players             | query?, dateStart?, dateEnd?             | 200 OK [Player]            | Any                 |
+| GET      | /api/players/:id         | id                                       | 200 OK {Player, [Comment]} | Any                 |
+| POST     | /api/players             | {Player}*                                | 201 Created {Player}       | Authenticated/Admin |
+| PUT      | /api/players/:id         | id, {Player}*                            | 200 OK {Player}            | Admin               |
+| DELETE   | /api/players/:id         | id                                       | 204 No Content             | Admin               |
+| GET      | /api/players/search      | query?                                   | 200 OK [ExternalPlayer]    | Authenticated/Admin |
+| POST     | /api/players/import      | [ExternalPlayerIds], latitude, longitude | 201 Created [Player]       | Authenticated/Admin |
+| GET      | /api/comments/player/:id | id                                       | 200 OK [Comment]           | Any                 |
+| POST     | /api/comments/player/:id | id, {Comment}                            | 201 Created {Comment}      | Any                 |
+| DELETE   | /api/comments/:id        | id                                       | 204 No Content             | Admin               |
+| GET      | /api/dream-teams         | -                                        | 200 OK [DreamTeam]         | Authenticated/Admin |
+| POST     | /api/dream-teams         | -                                        | 201 Created {DreamTeam}    | Authenticated/Admin |
 
 * Player sin `createdAt`, ya que es generado automáticamente por el servidor.
 
@@ -141,7 +141,7 @@ administrador:
 Para los seleccionados:
 
 - Se obtiene id del equipo que está en 2026 (que no incluya su nacionalidad): `https://v3.football.api-sports.io/players/teams?player=276`
-- Se obtiene la liga en la que está el equipo en 2026 (elegir la de tipo liga, que no sea del mundo y mayor duración): `https://v3.football.api-sports.io/leagues?team=128&season=2026`
+- Se obtiene la liga en la que está el equipo en 2026 (elegir la de tipo liga, que no sea del mundo y mayor duración): `https://v3.football.api-sports.io/leagues?team=128`
 
 ## Obtener token de Firebase en desarrollo
 
