@@ -36,6 +36,7 @@ public class RouteConfig {
     public RouteLocator customRouteLocator(RouteLocatorBuilder builder) {
         String playerUri = getServiceUri("player-service");
         String commentUri = getServiceUri("comment-service");
+        String dreamTeamUri = getServiceUri("dream-team-service");
 
         return builder.routes()
 
@@ -62,6 +63,13 @@ public class RouteConfig {
 
             // GET /api/players/:id (Any)
             .route("get-player", r -> r.path("/player-service/api/players/{id}")
+                .and().method("GET")
+                .filters(f -> f.filter(new JwtAuthenticationFilter())
+                            .rewritePath("/player-service/(?<remaining>.*)", "/${remaining}"))
+                .uri(playerUri))
+
+            // GET /api/players/name/:id (Any)
+            .route("get-player-name", r -> r.path("/player-service/api/players/name/{id}")
                 .and().method("GET")
                 .filters(f -> f.filter(new JwtAuthenticationFilter())
                             .rewritePath("/player-service/(?<remaining>.*)", "/${remaining}"))
@@ -108,6 +116,20 @@ public class RouteConfig {
                 .filters(f -> f.filter(new JwtAuthenticationFilter("ADMIN"))
                             .rewritePath("/comment-service/(?<remaining>.*)", "/${remaining}"))
                 .uri(commentUri))
+
+            // GET /api/dream-teams (Authenticated/Admin)
+            .route("get-dream-teams", r -> r.path("/dream-team-service/api/dream-teams")
+                .and().method("GET")
+                .filters(f -> f.filter(new JwtAuthenticationFilter("USER,ADMIN"))
+                            .rewritePath("/dream-team-service/(?<remaining>.*)", "/${remaining}"))
+                .uri(dreamTeamUri))
+
+            // POST /api/dream-teams (Authenticated/Admin)
+            // .route("create-dream-team", r -> r.path("/dream-team-service/api/dream-teams")
+            //     .and().method("POST")
+            //     .filters(f -> f.filter(new JwtAuthenticationFilter("USER,ADMIN"))
+            //                 .rewritePath("/dream-team-service/(?<remaining>.*)", "/${remaining}"))
+            //     .uri(dreamTeamUri))
 
             .build();
     }

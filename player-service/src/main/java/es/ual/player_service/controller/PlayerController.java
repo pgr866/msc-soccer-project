@@ -3,6 +3,7 @@ package es.ual.player_service.controller;
 import es.ual.player_service.domain.Player;
 import es.ual.player_service.dto.ExternalPlayerDTO;
 import es.ual.player_service.dto.PlayersImportRequestDTO;
+import es.ual.player_service.dto.PlayerNameDTO;
 import es.ual.player_service.dto.CommentDTO;
 import es.ual.player_service.dto.PlayerWithCommentsDTO;
 import es.ual.player_service.repository.PlayerRepository;
@@ -101,7 +102,9 @@ public class PlayerController {
         )
     )
     @GetMapping(value = "/players/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<PlayerWithCommentsDTO> getPlayerById(@PathVariable Long id) {
+    public ResponseEntity<PlayerWithCommentsDTO> getPlayerById(
+            @Parameter(description = "Unique ID of the player to retrieve") 
+            @PathVariable Long id) {
         Player player = playerRepository.findById(id)
                 .orElseThrow(() -> new PlayerNotFoundException(HttpStatus.NOT_FOUND, "Player not found"));
         List<CommentDTO> comments;
@@ -111,6 +114,36 @@ public class PlayerController {
             comments = List.of(); 
         }
         return ResponseEntity.ok(new PlayerWithCommentsDTO(player, comments));
+    }
+
+    @Operation(
+        summary = "Get player name by ID",
+        description = "Retrieves the ID and name of a player. Useful for other services that only need basic player info without all details."
+    )
+    @ApiResponse(
+        responseCode = "200",
+        description = "Player name found",
+        content = @Content(
+            mediaType = MediaType.APPLICATION_JSON_VALUE,
+            examples = @ExampleObject(value = "{\"id\": 1, \"name\": \"Neymar\"}")
+        )
+    )
+    @ApiResponse(
+        responseCode = "404",
+        description = "Error: Player not found",
+        content = @Content(
+            mediaType = MediaType.APPLICATION_JSON_VALUE,
+            examples = @ExampleObject(value = "{\"timestamp\": \"2026-05-27 12:00:00\", \"error\": \"Player not found\"}")
+        )
+    )
+    @GetMapping(value = "/players/name/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<PlayerNameDTO> getPlayerName(
+            @Parameter(description = "Unique ID of the player to retrieve") 
+            @PathVariable Long id) {
+        PlayerNameDTO playerName = playerRepository.findById(id)
+            .map(p -> new PlayerNameDTO(p.getId(), p.getName()))
+            .orElseThrow(() -> new PlayerNotFoundException(HttpStatus.NOT_FOUND, "Player not found"));
+        return ResponseEntity.ok(playerName);
     }
 
     @Operation(

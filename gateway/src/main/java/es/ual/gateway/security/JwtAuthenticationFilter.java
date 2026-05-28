@@ -17,6 +17,7 @@ import java.util.concurrent.TimeUnit;
 public class JwtAuthenticationFilter implements GatewayFilter {
 
     private final String requiredRole;
+    private final boolean allowAnonymous;
 
     private static final Cache<String, String> roleCache = Caffeine.newBuilder()
             .expireAfterWrite(5, TimeUnit.MINUTES)
@@ -25,17 +26,23 @@ public class JwtAuthenticationFilter implements GatewayFilter {
 
     public JwtAuthenticationFilter() {
         this.requiredRole = null;
+        this.allowAnonymous = true;
     }
 
     public JwtAuthenticationFilter(String requiredRole) {
         this.requiredRole = requiredRole;
+        this.allowAnonymous = false;
     }
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         String auth = exchange.getRequest().getHeaders().getFirst("Authorization");
         if (auth == null || !auth.startsWith("Bearer ")) {
-            return chain.filter(exchange);
+            if (allowAnonymous) {
+                return chain.filter(exchange);
+            } else {
+                return unauthorized(exchange);
+            }
         }
         return Mono.fromCallable(() -> FirebaseAuth.getInstance().verifyIdToken(auth.substring(7)))
             .subscribeOn(Schedulers.boundedElastic())

@@ -121,6 +121,7 @@ administrador:
 | -------- | ------------------------ | ---------------------------- | ------------------------------ | ------------------- |
 | GET      | /api/players             | query?, dateStart?, dateEnd? | 200 OK [Player]                | Any                 |
 | GET      | /api/players/:id         | id                           | 200 OK {PlayerWithCommentsDTO} | Any                 |
+| GET      | /api/players/name/:id    | id                           | 200 OK {PlayerNameDTO}         | Any                 |
 | POST     | /api/players             | {Player}*                    | 201 Created {Player}           | Authenticated/Admin |
 | PUT      | /api/players/:id         | id, {Player}*                | 200 OK {Player}                | Admin               |
 | DELETE   | /api/players/:id         | id                           | 204 No Content                 | Admin               |
