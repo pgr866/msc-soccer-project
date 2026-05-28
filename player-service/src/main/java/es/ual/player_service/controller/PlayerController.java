@@ -61,7 +61,7 @@ public class PlayerController {
         description = "Players list obtained",
         content = @Content(
             mediaType = MediaType.APPLICATION_JSON_VALUE,
-            examples = @ExampleObject(value = "[{\"id\": 1, \"name\": \"Neymar\", \"firstName\": \"Neymar\", \"lastName\": \"da Silva Santos Júnior\", \"age\": 34, \"birthdate\": \"1992-02-05\", \"nationality\": \"Brazil\", \"height\": 1.75, \"weight\": 68.00, \"number\": 10, \"team\": \"Paris Saint Germain\", \"league\": \"Ligue 1\", \"position\": \"Attacker\", \"photoUrl\": \"https://media.api-sports.io/football/players/276.png\", \"latitude\": -23.944841, \"longitude\": -46.330376, \"createdAt\": \"2026-05-27T12:00:00\"}]")
+            examples = @ExampleObject(value = "[{\"id\": 1, \"name\": \"Neymar\", \"firstName\": \"Neymar\", \"lastName\": \"da Silva Santos Júnior\", \"age\": 34, \"birthdate\": \"1992-02-05\", \"nationality\": \"Brazil\", \"height\": 1.75, \"weight\": 68.00, \"number\": 10, \"team\": \"Santos\", \"league\": \"Serie A\", \"position\": \"Attacker\", \"photoUrl\": \"https://media.api-sports.io/football/players/276.png\", \"latitude\": -23.944841, \"longitude\": -46.330376, \"createdAt\": \"2026-05-27T12:00:00\"}]")
         )
     )
     @GetMapping(value = "/players", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -87,7 +87,7 @@ public class PlayerController {
         description = "Player found",
         content = @Content(
             mediaType = MediaType.APPLICATION_JSON_VALUE,
-            examples = @ExampleObject(value = "{\"id\": 1, \"name\": \"Neymar\", \"firstName\": \"Neymar\", \"lastName\": \"da Silva Santos Júnior\", \"age\": 34, \"birthdate\": \"1992-02-05\", \"nationality\": \"Brazil\", \"height\": 1.75, \"weight\": 68.00, \"number\": 10, \"team\": \"Paris Saint Germain\", \"league\": \"Ligue 1\", \"position\": \"Attacker\", \"photoUrl\": \"https://media.api-sports.io/football/players/276.png\", \"latitude\": -23.944841, \"longitude\": -46.330376, \"createdAt\": \"2026-05-27T12:00:00\"}")
+            examples = @ExampleObject(value = "{\"id\": 1, \"name\": \"Neymar\", \"firstName\": \"Neymar\", \"lastName\": \"da Silva Santos Júnior\", \"age\": 34, \"birthdate\": \"1992-02-05\", \"nationality\": \"Brazil\", \"height\": 1.75, \"weight\": 68.00, \"number\": 10, \"team\": \"Santos\", \"league\": \"Serie A\", \"position\": \"Attacker\", \"photoUrl\": \"https://media.api-sports.io/football/players/276.png\", \"latitude\": -23.944841, \"longitude\": -46.330376, \"createdAt\": \"2026-05-27T12:00:00\"}")
         )
     )
     @ApiResponse(
@@ -116,7 +116,7 @@ public class PlayerController {
         description = "Player created successfully",
         content = @Content(
             mediaType = MediaType.APPLICATION_JSON_VALUE,
-            examples = @ExampleObject(value = "{\"id\": 1, \"name\": \"Neymar\", \"firstName\": \"Neymar\", \"lastName\": \"da Silva Santos Júnior\", \"age\": 34, \"birthdate\": \"1992-02-05\", \"nationality\": \"Brazil\", \"height\": 1.75, \"weight\": 68.00, \"number\": 10, \"team\": \"Paris Saint Germain\", \"league\": \"Ligue 1\", \"position\": \"Attacker\", \"photoUrl\": \"https://media.api-sports.io/football/players/276.png\", \"latitude\": -23.944841, \"longitude\": -46.330376, \"createdAt\": \"2026-05-27T12:00:00\"}")
+            examples = @ExampleObject(value = "{\"id\": 1, \"name\": \"Neymar\", \"firstName\": \"Neymar\", \"lastName\": \"da Silva Santos Júnior\", \"age\": 34, \"birthdate\": \"1992-02-05\", \"nationality\": \"Brazil\", \"height\": 1.75, \"weight\": 68.00, \"number\": 10, \"team\": \"Santos\", \"league\": \"Serie A\", \"position\": \"Attacker\", \"photoUrl\": \"https://media.api-sports.io/football/players/276.png\", \"latitude\": -23.944841, \"longitude\": -46.330376, \"createdAt\": \"2026-05-27T12:00:00\"}")
         )
     )
     @ApiResponse(
@@ -130,7 +130,7 @@ public class PlayerController {
                 description = "Player object to be created",
                 required = true,
                 content = @Content(
-                    examples = @ExampleObject(value = "{\"name\": \"Neymar\", \"firstName\": \"Neymar\", \"lastName\": \"da Silva Santos Júnior\", \"age\": 34, \"birthdate\": \"1992-02-05\", \"nationality\": \"Brazil\", \"height\": 1.75, \"weight\": 68.00, \"number\": 10, \"team\": \"Paris Saint Germain\", \"league\": \"Ligue 1\", \"position\": \"Attacker\", \"photoUrl\": \"https://media.api-sports.io/football/players/276.png\", \"latitude\": -23.944841, \"longitude\": -46.330376}")
+                    examples = @ExampleObject(value = "{\"name\": \"Neymar\", \"firstName\": \"Neymar\", \"lastName\": \"da Silva Santos Júnior\", \"age\": 34, \"birthdate\": \"1992-02-05\", \"nationality\": \"Brazil\", \"height\": 1.75, \"weight\": 68.00, \"number\": 10, \"team\": \"Santos\", \"league\": \"Serie A\", \"position\": \"Attacker\", \"photoUrl\": \"https://media.api-sports.io/football/players/276.png\", \"latitude\": -23.944841, \"longitude\": -46.330376}")
                 )
             )
             @Valid @RequestBody Player player) {
@@ -148,7 +148,7 @@ public class PlayerController {
         description = "Player updated successfully",
         content = @Content(
             mediaType = MediaType.APPLICATION_JSON_VALUE,
-            examples = @ExampleObject(value = "{\"id\": 1, \"name\": \"Neymar\", \"firstName\": \"Neymar\", \"lastName\": \"da Silva Santos Júnior\", \"age\": 34, \"birthdate\": \"1992-02-05\", \"nationality\": \"Brazil\", \"height\": 1.75, \"weight\": 68.00, \"number\": 10, \"team\": \"Paris Saint Germain\", \"league\": \"Ligue 1\", \"position\": \"Attacker\", \"photoUrl\": \"https://media.api-sports.io/football/players/276.png\", \"latitude\": -23.944841, \"longitude\": -46.330376, \"createdAt\": \"2026-05-27T12:00:00\"}")
+            examples = @ExampleObject(value = "{\"id\": 1, \"name\": \"Neymar\", \"firstName\": \"Neymar\", \"lastName\": \"da Silva Santos Júnior\", \"age\": 34, \"birthdate\": \"1992-02-05\", \"nationality\": \"Brazil\", \"height\": 1.75, \"weight\": 68.00, \"number\": 10, \"team\": \"Santos\", \"league\": \"Serie A\", \"position\": \"Attacker\", \"photoUrl\": \"https://media.api-sports.io/football/players/276.png\", \"latitude\": -23.944841, \"longitude\": -46.330376, \"createdAt\": \"2026-05-27T12:00:00\"}")
         )
     )
     @ApiResponse(
@@ -177,7 +177,7 @@ public class PlayerController {
                 description = "Updated player object",
                 required = true,
                 content = @Content(
-                    examples = @ExampleObject(value = "{\"name\": \"Neymar\", \"firstName\": \"Neymar\", \"lastName\": \"da Silva Santos Júnior\", \"age\": 34, \"birthdate\": \"1992-02-05\", \"nationality\": \"Brazil\", \"height\": 1.75, \"weight\": 68.00, \"number\": 10, \"team\": \"Paris Saint Germain\", \"league\": \"Ligue 1\", \"position\": \"Attacker\", \"photoUrl\": \"https://media.api-sports.io/football/players/276.png\", \"latitude\": -23.944841, \"longitude\": -46.330376}")
+                    examples = @ExampleObject(value = "{\"name\": \"Neymar\", \"firstName\": \"Neymar\", \"lastName\": \"da Silva Santos Júnior\", \"age\": 34, \"birthdate\": \"1992-02-05\", \"nationality\": \"Brazil\", \"height\": 1.75, \"weight\": 68.00, \"number\": 10, \"team\": \"Santos\", \"league\": \"Serie A\", \"position\": \"Attacker\", \"photoUrl\": \"https://media.api-sports.io/football/players/276.png\", \"latitude\": -23.944841, \"longitude\": -46.330376}")
                 )
             )
             @Valid @RequestBody Player playerDetails) {
@@ -326,7 +326,7 @@ public class PlayerController {
         description = "Players imported and created successfully",
         content = @Content(
             mediaType = MediaType.APPLICATION_JSON_VALUE,
-            examples = @ExampleObject(value = "[{\"id\": 1, \"name\": \"Neymar\", \"firstName\": \"Neymar\", \"lastName\": \"da Silva Santos Júnior\", \"age\": 34, \"birthdate\": \"1992-02-05\", \"nationality\": \"Brazil\", \"height\": 1.75, \"weight\": 68.00, \"number\": 10, \"team\": \"Santos\", \"league\": \"Campeonato Brasileiro Série A\", \"position\": \"Attacker\", \"photoUrl\": \"https://media.api-sports.io/football/players/276.png\", \"latitude\": 40.0, \"longitude\": -3.0, \"createdAt\": \"2026-05-28T06:00:00\"}]")
+            examples = @ExampleObject(value = "[{\"id\": 1, \"name\": \"Neymar\", \"firstName\": \"Neymar\", \"lastName\": \"da Silva Santos Júnior\", \"age\": 34, \"birthdate\": \"1992-02-05\", \"nationality\": \"Brazil\", \"height\": 1.75, \"weight\": 68.00, \"number\": 10, \"team\": \"Santos\", \"league\": \"Serie A\", \"position\": \"Attacker\", \"photoUrl\": \"https://media.api-sports.io/football/players/276.png\", \"latitude\": 40.0, \"longitude\": -3.0, \"createdAt\": \"2026-05-28T06:00:00\"}]")
         )
     )
     @ApiResponse(
