@@ -1,6 +1,6 @@
 package es.ual.comment_service.dto;
 
-public record CommentRequest(
+public record CommentRequestDTO(
     String text,
     Integer rating,
     Double latitude,

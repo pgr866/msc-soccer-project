@@ -2,7 +2,7 @@ package es.ual.player_service.dto;
 
 import java.time.LocalDate;
 
-public record ExternalPlayer(
+public record ExternalPlayerDTO(
     Long id,
     String name,
     String first_name,
