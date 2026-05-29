@@ -42,7 +42,7 @@ app.use(cors({
     if (!origin || origin === allowedOrigin) {
       callback(null, true);
     } else {
-      callback(new Error('Not allowed by CORS'));
+      callback(null, false);
     }
   },
   credentials: true,
@@ -73,7 +73,7 @@ if (process.env.NODE_ENV === 'development') {
   };
   app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs, swaggerUiOptions));
 }
-  
+
 // catch 404 and forward to error handler
 app.use(function(req: Request, res: Response, next: NextFunction) {
   next(createError(404));

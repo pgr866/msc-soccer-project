@@ -6,6 +6,36 @@ import { type User } from '../models/user.js';
 
 const roleCache = new NodeCache({ stdTTL: 300 }); // Cache for 5 minutes
 
+export const optionalAuthenticate = async (req: Request & { user?: User }, res: Response, next: NextFunction) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader?.startsWith('Bearer ')) {
+        return next();
+    }
+    const token = authHeader.split('Bearer ')[1];
+    if (!token) return next();
+    try {
+        const decodedToken = await getAuth().verifyIdToken(token);
+        const cachedRole = roleCache.get<'USER' | 'ADMIN'>(decodedToken.uid);
+        if (cachedRole) {
+            req.user = { uid: decodedToken.uid, email: decodedToken.email ?? '', role: cachedRole };
+        } else {
+            const db = getFirestore();
+            const userDoc = await db.collection('users').doc(decodedToken.uid).get();
+            const userData = userDoc.data();
+            const role: 'USER' | 'ADMIN' = userData?.role === 'ADMIN' ? 'ADMIN' : 'USER';
+            roleCache.set(decodedToken.uid, role);
+            req.user = {
+                uid: decodedToken.uid,
+                email: decodedToken.email ?? '',
+                role: role
+            };
+        }
+        next();
+    } catch (err: unknown) {
+        next();
+    }
+};
+
 export const authenticate = async (req: Request & { user?: User }, res: Response, next: NextFunction) => {
     const authHeader = req.headers.authorization;
     if (!authHeader?.startsWith('Bearer ')) {
