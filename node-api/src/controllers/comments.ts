@@ -36,7 +36,7 @@ import { type User } from '../models/user.js';
  */
 export const commentsReadByPlayer = async (req: Request, res: Response): Promise<Response> => {
     try {
-        const playerId = req.params.id;
+        const playerId = req.params.id as string;
         if (!mongoose.Types.ObjectId.isValid(playerId)) {
             return res.status(404).json({ 
                 timestamp: new Date().toISOString().replace('T', ' ').substring(0, 19),
@@ -52,9 +52,9 @@ export const commentsReadByPlayer = async (req: Request, res: Response): Promise
         }
         const comments = player.comments.map((c: any) => {
             const commentObj = c.toObject();
-            commentObj.id = commentObj._id;
-            delete commentObj._id;
-            return commentObj;
+            const { _id, ...commentWithoutId } = commentObj;
+            const finalComment = { ...commentWithoutId, id: _id };
+            return finalComment;
         });
         return res.status(200).json(comments);
     } catch (e: unknown) {
@@ -109,7 +109,7 @@ export const commentsReadByPlayer = async (req: Request, res: Response): Promise
  */
 export const commentsCreate = async (req: Request & { user?: User }, res: Response): Promise<Response> => {
     try {
-        const playerId = req.params.id;
+        const playerId = req.params.id as string;
         if (!mongoose.Types.ObjectId.isValid(playerId)) {
             return res.status(404).json({
                 timestamp: new Date().toISOString().replace('T', ' ').substring(0, 19),
@@ -136,10 +136,13 @@ export const commentsCreate = async (req: Request & { user?: User }, res: Respon
         player.comments.push(newComment as any);
         await player.save();
         const commentDoc = player.comments[player.comments.length - 1];
+        if (!commentDoc) {
+            throw new Error("Comment not created");
+        }
         const commentObj = commentDoc.toObject();
-        commentObj.id = commentObj._id;
-        delete commentObj._id;
-        return res.status(201).json(commentObj);
+        const { _id, ...commentWithoutId } = commentObj;
+        const finalComment = { ...commentWithoutId, id: _id };
+        return res.status(201).json(finalComment);
     } catch (e: unknown) {
         return res.status(500).json({ error: "Internal Server Error" });
     }
@@ -193,7 +196,7 @@ export const commentsCreate = async (req: Request & { user?: User }, res: Respon
  */
 export const commentsDelete = async (req: Request, res: Response): Promise<Response> => {
     try {
-        const commentId = req.params.id;
+        const commentId = req.params.id as string;
         if (!mongoose.Types.ObjectId.isValid(commentId)) {
             return res.status(404).json({
                 timestamp: new Date().toISOString().replace('T', ' ').substring(0, 19),

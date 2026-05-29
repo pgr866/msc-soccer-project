@@ -155,7 +155,7 @@ export const playersReadSummary = async (req: Request, res: Response): Promise<R
 export const playersReadOne = async (req: Request, res: Response): Promise<Response> => {
     try {
         const id = req.params.id;
-        if (!mongoose.Types.ObjectId.isValid(id)) {
+        if (!id || !mongoose.Types.ObjectId.isValid(id as string)) {
             return res.status(404).json({
                 timestamp: new Date().toISOString().replace('T', ' ').substring(0, 19),
                 error: `Player not found with id: ${id}`
@@ -169,10 +169,9 @@ export const playersReadOne = async (req: Request, res: Response): Promise<Respo
             });
         }
         const playerData = player.toJSON();
-        const comments = playerData.comments;
-        delete playerData.comments;
+        const { comments, ...playerDataWithoutComments } = playerData;
         return res.status(200).json({
-            player: playerData,
+            player: playerDataWithoutComments,
             comments: comments 
         });
     } catch (e: unknown) {
@@ -219,7 +218,7 @@ export const playersReadOne = async (req: Request, res: Response): Promise<Respo
 export const playersReadName = async (req: Request, res: Response): Promise<Response> => {
     try {
         const id = req.params.id;
-        if (!mongoose.Types.ObjectId.isValid(id)) {
+        if (!id || !mongoose.Types.ObjectId.isValid(id as string)) {
             return res.status(404).json({
                 timestamp: new Date().toISOString().replace('T', ' ').substring(0, 19),
                 error: "Player not found"
@@ -301,8 +300,8 @@ export const playersCreate = async (req: Request, res: Response): Promise<Respon
         const newPlayer = new Player(playerData);
         await newPlayer.save();
         const playerObj = newPlayer.toJSON();
-        delete playerObj.comments;
-        return res.status(201).json(playerObj);
+        const { comments: _, ...playerWithoutComments } = playerObj;
+        return res.status(201).json(playerWithoutComments);
     } catch (e: unknown) {
         return res.status(500).json({ error: "Internal Server Error" });
     }
@@ -384,7 +383,7 @@ export const playersCreate = async (req: Request, res: Response): Promise<Respon
 export const playersUpdate = async (req: Request, res: Response): Promise<Response> => {
     try {
         const id = req.params.id;
-        if (!mongoose.Types.ObjectId.isValid(id)) {
+        if (!id || !mongoose.Types.ObjectId.isValid(id as string)) {
             return res.status(404).json({
                 timestamp: new Date().toISOString().replace('T', ' ').substring(0, 19),
                 error: `Player not found with id: ${id}`
@@ -457,7 +456,7 @@ export const playersUpdate = async (req: Request, res: Response): Promise<Respon
 export const playersDelete = async (req: Request, res: Response): Promise<Response> => {
     try {
         const id = req.params.id;
-        if (!mongoose.Types.ObjectId.isValid(id)) {
+        if (!id || !mongoose.Types.ObjectId.isValid(id as string)) {
             return res.status(404).json({
                 timestamp: new Date().toISOString().replace('T', ' ').substring(0, 19),
                 error: `Player not found with id: ${id}`

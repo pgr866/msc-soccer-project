@@ -40,7 +40,7 @@ describe("DreamTeams Controller Integration Tests", () => {
 
     test("GET /api/dream-teams: should retrieve user teams", async () => {
         const p = await Player.create({ name: "Neymar", latitude: 0, longitude: 0 });
-        await DreamTeam.create({ userId: testUid, name: "My Team", playerIds: [p._id] });
+        await DreamTeam.create({ userId: testUid, name: "My Team", playerIds: [p._id.toString()] });
 
         const res = await request(app)
             .get("/api/dream-teams")

@@ -59,7 +59,7 @@ describe("Comments Controller Integration Tests", () => {
     describe("DELETE /api/comments/:id", () => {
         test("should delete comment", async () => {
             const p = await Player.create(mockPlayer);
-            const commentId = p.comments[0]._id;
+            const commentId = p.comments![0]?._id;
             const res = await request(app)
                 .delete(`/api/comments/${commentId}`)
                 .set("Authorization", `Bearer ${token}`);
