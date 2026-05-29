@@ -75,6 +75,13 @@ public class RouteConfig {
                             .rewritePath("/player-service/(?<remaining>.*)", "/${remaining}"))
                 .uri(playerUri))
 
+            // GET /api/players/summary (Any)
+            .route("get-players-summary", r -> r.path("/player-service/api/players/summary")
+                .and().method("GET")
+                .filters(f -> f.filter(new JwtAuthenticationFilter())
+                            .rewritePath("/player-service/(?<remaining>.*)", "/${remaining}"))
+                .uri(playerUri))
+
             // POST /api/players (Authenticated/Admin)
             .route("create-player", r -> r.path("/player-service/api/players")
                 .and().method("POST")
@@ -125,11 +132,11 @@ public class RouteConfig {
                 .uri(dreamTeamUri))
 
             // POST /api/dream-teams (Authenticated/Admin)
-            // .route("create-dream-team", r -> r.path("/dream-team-service/api/dream-teams")
-            //     .and().method("POST")
-            //     .filters(f -> f.filter(new JwtAuthenticationFilter("USER,ADMIN"))
-            //                 .rewritePath("/dream-team-service/(?<remaining>.*)", "/${remaining}"))
-            //     .uri(dreamTeamUri))
+            .route("create-dream-team", r -> r.path("/dream-team-service/api/dream-teams")
+                .and().method("POST")
+                .filters(f -> f.filter(new JwtAuthenticationFilter("USER,ADMIN"))
+                            .rewritePath("/dream-team-service/(?<remaining>.*)", "/${remaining}"))
+                .uri(dreamTeamUri))
 
             .build();
     }

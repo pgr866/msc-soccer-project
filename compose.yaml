@@ -142,6 +142,7 @@ services:
       SB_DB_NAME: postgres
       SB_DB_USER: user
       SB_DB_PASSWORD: password
+      GROQ_API_KEY: ${GROQ_API_KEY}
     depends_on:
       postgresdb:
         condition: service_healthy
@@ -202,6 +203,7 @@ services:
       MDB_DB_NAME: mongo
       MDB_DB_PORT: 27017
       FOOTBALL_API_KEY: ${FOOTBALL_API_KEY}
+      GROQ_API_KEY: ${GROQ_API_KEY}
     depends_on:
       mongodb:
         condition: service_healthy

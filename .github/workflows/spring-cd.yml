@@ -331,6 +331,7 @@ jobs:
             SB_DB_NAME=${{ env.SB_DB_NAME }}
             SB_DB_USER=${{ secrets.SB_DB_USER }}
             SB_DB_PASSWORD=${{ secrets.SB_DB_PASSWORD }}
+            GROQ_API_KEY=${{ secrets.GROQ_API_KEY }}
           flags: |
             --port=8083
             --ingress=internal
