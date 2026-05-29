@@ -15,13 +15,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 
-@SpringBootTest(webEnvironment = RANDOM_PORT, properties = {
-    "spring.jpa.hibernate.ddl-auto=update",
-    "spring.cloud.config.enabled=false",
-    "eureka.client.enabled=false",
-})
+@SpringBootTest(properties = "spring.jpa.hibernate.ddl-auto=create-drop")
 @Testcontainers
 class CommentRepositoryTest {
 
@@ -38,52 +33,49 @@ class CommentRepositoryTest {
     }
 
     @Test
+    void shouldSaveAndFindComment() {
+        Comment comment = createComment(1L, "Great performance!", 5);
+        commentRepository.save(comment);
+        List<Comment> found = commentRepository.findAll();
+        assertThat(found).hasSize(1);
+        assertThat(found.get(0).getText()).isEqualTo("Great performance!");
+    }
+
+    @Test
     void shouldFindByPlayerId() {
-        // GIVEN
-        commentRepository.save(createComment(1L, "Great player"));
-        commentRepository.save(createComment(1L, "Second comment"));
-        commentRepository.save(createComment(2L, "Different player"));
-
-        // WHEN
+        commentRepository.save(createComment(1L, "Comment 1 for player 1", 5));
+        commentRepository.save(createComment(1L, "Comment 2 for player 1", 4));
+        commentRepository.save(createComment(2L, "Comment for player 2", 3));
         List<Comment> player1Comments = commentRepository.findByPlayerId(1L);
-
-        // THEN
+        List<Comment> player2Comments = commentRepository.findByPlayerId(2L);
         assertThat(player1Comments).hasSize(2);
-        assertThat(player1Comments).allMatch(c -> c.getPlayerId().equals(1L));
+        assertThat(player2Comments).hasSize(1);
+        assertThat(player1Comments.get(0).getPlayerId()).isEqualTo(1L);
     }
 
     @Test
-    void shouldReturnEmptyList_WhenPlayerHasNoComments() {
-        // WHEN
-        List<Comment> comments = commentRepository.findByPlayerId(999L);
-
-        // THEN
-        assertThat(comments).isEmpty();
+    void shouldReturnEmptyListWhenNoCommentsFoundForPlayer() {
+        List<Comment> found = commentRepository.findByPlayerId(999L);
+        assertThat(found).isEmpty();
     }
 
     @Test
-    void shouldSaveAndRetrieveComment() {
-        // GIVEN
-        Comment comment = createComment(1L, "Persistence test");
-        
-        // WHEN
-        Comment saved = commentRepository.save(comment);
-        
-        // THEN
-        Comment retrieved = commentRepository.findById(saved.getId()).orElse(null);
-        assertThat(retrieved).isNotNull();
-        assertThat(retrieved.getText()).isEqualTo("Persistence test");
+    void shouldDeleteComment() {
+        Comment comment = commentRepository.save(createComment(1L, "To be deleted", 1));
+        commentRepository.deleteById(comment.getId());
+        List<Comment> found = commentRepository.findByPlayerId(1L);
+        assertThat(found).isEmpty();
     }
 
-    private Comment createComment(Long playerId, String text) {
+    private Comment createComment(Long playerId, String text, int rating) {
         Comment c = new Comment();
         c.setPlayerId(playerId);
-        c.setAuthor("user@test.com");
         c.setText(text);
-        c.setRating((byte) 5);
+        c.setRating((byte) rating);
+        c.setAuthor("user@test.com");
+        c.setCreatedAt(LocalDateTime.now());
         c.setLatitude(BigDecimal.ZERO);
         c.setLongitude(BigDecimal.ZERO);
-        c.setCreatedAt(LocalDateTime.now());
         return c;
     }
 }
