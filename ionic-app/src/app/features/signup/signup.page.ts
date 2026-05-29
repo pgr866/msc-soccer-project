@@ -3,13 +3,13 @@ import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormGroup, FormControl, Validators, AbstractControl } from '@angular/forms';
 import { IonicModule, ToastController, LoadingController } from '@ionic/angular';
 import { AuthService } from '@/app/core/services/auth.service';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-signup',
   templateUrl: './signup.page.html',
   styleUrls: ['./signup.page.scss'],
-  imports: [IonicModule, CommonModule, FormsModule, ReactiveFormsModule]
+  imports: [IonicModule, CommonModule, FormsModule, ReactiveFormsModule, RouterLink]
 })
 export class SignupPage {
   private authService = inject(AuthService);
@@ -25,7 +25,7 @@ export class SignupPage {
 
   constructor() {
     effect(() => {
-      if (this.authService.currentUser()) this.router.navigate(["/home"]);
+      if (this.authService.currentUser()) this.router.navigate(["/players"]);
     });
   }
 
@@ -45,7 +45,7 @@ export class SignupPage {
     try {
       await this.authService.signup(email!, password!, repeat_password!);
       this.showInfoMessage('Cuenta creada con éxito.');
-      this.router.navigate(["/home"]);
+      this.router.navigate(["/players"]);
     } catch (error: any) {
       this.showErrorMessage(error.message);
     } finally {

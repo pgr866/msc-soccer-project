@@ -3,13 +3,13 @@ import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormGroup, FormControl, Validators } from '@angular/forms';
 import { IonicModule, ToastController, LoadingController } from '@ionic/angular';
 import { AuthService } from '@/app/core/services/auth.service';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-login',
   templateUrl: './login.page.html',
   styleUrls: ['./login.page.scss'],
-  imports: [IonicModule, CommonModule, FormsModule, ReactiveFormsModule]
+  imports: [IonicModule, CommonModule, FormsModule, ReactiveFormsModule, RouterLink]
 })
 export class LoginPage {
   private authService = inject(AuthService);
@@ -24,7 +24,7 @@ export class LoginPage {
 
   constructor() {
     effect(() => {
-      if (this.authService.currentUser()) this.router.navigate(["/home"]);
+      if (this.authService.currentUser()) this.router.navigate(["/players"]);
     });
   }
 
@@ -44,7 +44,9 @@ export class LoginPage {
       await this.authService.login(email!, password!);
       this.loginForm.reset();
       this.showInfoMessage('Inicio de sesión realizado. Redirigiendo...');
-      this.router.navigate(["/home"]);
+      setTimeout(() => {
+        this.router.navigate(["/players"]);
+      }, 1000);
     } catch (error: any) {
       this.showErrorMessage('Error en la autenticación: ' + error.message);
     } finally {
