@@ -49,7 +49,7 @@
   --ion-color-primary-contrast: oklch(0.979 0.021 166.113);
   --ion-color-secondary: oklch(0.967 0.001 286.375);
   --ion-color-secondary-contrast: oklch(12.278% 0.0425 278.132);
-  --ion-color-danger: oklch(0.577 0.245 27.325);
+  --ion-color-danger: oklch(43.26% 0.16064 25.42);
   --ion-color-danger-contrast: #ffffff;
   --ion-item-background: oklch(0.967 0.001 286.375);
   --ion-card-color: oklch(0.27 0 0);
@@ -195,6 +195,10 @@ ion-card-title {
 
 .margin-top {
   margin-top: 20px !important;
+}
+
+.padding-top {
+  padding-top: 50px !important;
 }
 
 .margin-bottom {

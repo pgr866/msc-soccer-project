@@ -53,7 +53,7 @@ export class PlayersPage implements OnInit {
 
   logout() {
     this.authService.logout();
-    this.router.navigate(['/home']);
+    this.router.navigate(['/login']);
   }
 
   async takePhoto() {

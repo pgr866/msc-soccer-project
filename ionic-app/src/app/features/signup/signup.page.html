@@ -7,26 +7,33 @@
   </ion-toolbar>
 </ion-header>
 <ion-content class="ion-padding">
-  <h1 class="ion-text-center title">Crear Cuenta</h1>
-  <form [formGroup]="signupForm" (ngSubmit)="signup()" class="centered-login">
-    <ion-item class="ion-margin-top">
-      <ion-label position="floating">Correo Electrónico</ion-label>
-      <ion-input type="email" formControlName="email"></ion-input>
-    </ion-item>
-    <ion-item class="ion-margin-top">
-      <ion-label position="floating">Contraseña</ion-label>
-      <ion-input type="password" formControlName="password"></ion-input>
-    </ion-item>
-    <ion-item class="ion-margin-top">
-      <ion-label position="floating">Repetir Contraseña</ion-label>
-      <ion-input type="password" formControlName="repeat_password"></ion-input>
-    </ion-item>
-    @if (signupForm.hasError('mismatch') && signupForm.get('repeat_password')?.touched) {
-      <ion-text class="text-margin-left" color="danger">
-        Las contraseñas no coinciden.
-      </ion-text>
-    }
-    <ion-button expand="full" type="submit" [disabled]="signupForm.invalid"
-      class="small-centered-button ion-margin-top">Registrarse</ion-button>
-  </form>
+  <div class="padding-top">
+    <div class="centered-login">
+      <h1 class="ion-text-center title">Crear Cuenta</h1>
+      <form [formGroup]="signupForm" (ngSubmit)="signup()" class="centered-login">
+        <ion-item class="ion-margin-top">
+          <ion-label position="floating">Correo Electrónico</ion-label>
+          <ion-input type="email" formControlName="email"></ion-input>
+        </ion-item>
+        <ion-item class="ion-margin-top">
+          <ion-label position="floating">Contraseña</ion-label>
+          <ion-input type="password" formControlName="password"></ion-input>
+        </ion-item>
+        <ion-item class="ion-margin-top">
+          <ion-label position="floating">Repetir Contraseña</ion-label>
+          <ion-input type="password" formControlName="repeat_password"></ion-input>
+        </ion-item>
+        @if (signupForm.hasError('mismatch') && signupForm.get('repeat_password')?.touched) {
+          <ion-text class="text-margin-left" color="danger">
+            Las contraseñas no coinciden.
+          </ion-text>
+        }
+        <ion-button expand="full" type="submit" [disabled]="signupForm.invalid"
+          class="small-centered-button ion-margin-top">Registrarse</ion-button>
+      </form>
+      <div class="ion-text-center ion-margin-top">
+        <a [routerLink]="['/login']">¿Ya tienes cuenta? Inicia sesión</a>
+      </div>
+    </div>
+  </div>
 </ion-content>
