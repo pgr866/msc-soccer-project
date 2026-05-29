@@ -15,8 +15,11 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest(webEnvironment = RANDOM_PORT, properties = {
@@ -29,7 +32,7 @@ class PlayerControllerTest {
 
     @Container
     @ServiceConnection
-    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:18-alpine");
+    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:16-alpine");
 
     @Autowired
     private WebApplicationContext wac;
@@ -43,13 +46,37 @@ class PlayerControllerTest {
     void setup() {
         this.mockMvc = MockMvcBuilders.webAppContextSetup(wac).build();
         playerRepository.deleteAll();
-        // playerRepository.save(new Player("Cristiano Ronaldo", 41));
     }
 
-    // @Test
-    // void shouldReturnAllPlayers() throws Exception {
-    //     mockMvc.perform(get("/api/players").contentType(MediaType.APPLICATION_JSON))
-    //         .andExpect(status().isOk())
-    //         .andExpect(jsonPath("$[0].name").value("Cristiano Ronaldo"));
-    // }
+    @Test
+    void shouldReturnAllPlayers() throws Exception {
+        mockMvc.perform(get("/api/players").contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk());
+    }
+
+    @Test
+    void shouldFilterPlayersByName() throws Exception {
+        // Create a player in the Testcontainers real DB
+        Player p = new Player();
+        p.setName("Neymar");
+        p.setLatitude(BigDecimal.ZERO);
+        p.setLongitude(BigDecimal.ZERO);
+        p.setCreatedAt(LocalDateTime.now());
+        playerRepository.save(p);
+
+        // Verify that the filtering endpoint finds it
+        mockMvc.perform(get("/api/players").param("query", "Ney"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$[0].name").value("Neymar"));
+    }
+
+    @Test
+    void shouldReturn400_WhenCreatingPlayerWithInvalidData() throws Exception {
+        // Create invalid player data (name is required)
+        String invalidPlayerJson = "{\"name\": \"\", \"latitude\": 0, \"longitude\": 0}";
+        mockMvc.perform(post("/api/players")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(invalidPlayerJson))
+            .andExpect(status().isBadRequest());
+    }
 }
