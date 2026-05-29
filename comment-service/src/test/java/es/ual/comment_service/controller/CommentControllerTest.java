@@ -47,6 +47,18 @@ class CommentControllerTest {
     @MockitoBean
     private PlayerClient playerClient;
 
+    private Comment createValidComment(Long playerId, String text) {
+        Comment c = new Comment();
+        c.setPlayerId(playerId);
+        c.setText(text);
+        c.setAuthor("test-user");
+        c.setRating((byte) 5);
+        c.setLatitude(java.math.BigDecimal.ZERO);
+        c.setLongitude(java.math.BigDecimal.ZERO);
+        c.setCreatedAt(java.time.LocalDateTime.now());
+        return c;
+    }
+
     @BeforeEach
     void setup() {
         this.mockMvc = MockMvcBuilders.webAppContextSetup(wac).build();
@@ -55,9 +67,7 @@ class CommentControllerTest {
 
     @Test
     void shouldGetCommentsByPlayerId() throws Exception {
-        Comment c = new Comment();
-        c.setPlayerId(1L);
-        c.setText("Great player!");
+        Comment c = createValidComment(1L, "Great player!");
         commentRepository.save(c);
         mockMvc.perform(get("/api/comments/player/1")
                 .contentType(MediaType.APPLICATION_JSON))
@@ -90,8 +100,7 @@ class CommentControllerTest {
 
     @Test
     void shouldDeleteCommentSuccessfully() throws Exception {
-        Comment c = new Comment();
-        c.setPlayerId(1L);
+        Comment c = createValidComment(1L, "To be deleted");
         c = commentRepository.save(c);
         mockMvc.perform(delete("/api/comments/" + c.getId()))
             .andExpect(status().isNoContent());
