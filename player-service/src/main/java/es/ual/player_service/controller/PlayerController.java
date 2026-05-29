@@ -66,6 +66,11 @@ public class PlayerController {
             examples = @ExampleObject(value = "[{\"id\": 1, \"name\": \"Neymar\", \"firstName\": \"Neymar\", \"lastName\": \"da Silva Santos Júnior\", \"age\": 34, \"birthdate\": \"1992-02-05\", \"nationality\": \"Brazil\", \"height\": 1.75, \"weight\": 68, \"number\": 10, \"team\": \"Santos\", \"league\": \"Serie A\", \"position\": \"Attacker\", \"photoUrl\": \"https://media.api-sports.io/football/players/276.png\", \"latitude\": -23.944841, \"longitude\": -46.330376, \"createdAt\": \"2026-05-27T12:00:00\"}]")
         )
     )
+    @ApiResponse(
+        responseCode = "500",
+        description = "Error: Internal Server Error",
+        content = @Content(schema = @Schema(hidden = true))
+    )
     @GetMapping(value = "/players", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<Player>> getPlayers(
             @Parameter(description = "Search term for name, team or league") 
@@ -91,6 +96,11 @@ public class PlayerController {
             mediaType = MediaType.APPLICATION_JSON_VALUE,
             examples = @ExampleObject(value = "[{\"id\": 1, \"name\": \"Neymar\", \"position\": \"Attacker\", \"team\": \"Santos\", \"league\": \"Serie A\", \"age\": 34, \"height\": 1.75, \"weight\": 68}]")
         )
+    )
+    @ApiResponse(
+        responseCode = "500",
+        description = "Error: Internal Server Error",
+        content = @Content(schema = @Schema(hidden = true))
     )
     @GetMapping(value = "/players/summary", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<PlayerSummaryDTO>> getPlayersSummary() {
@@ -125,6 +135,11 @@ public class PlayerController {
             mediaType = MediaType.APPLICATION_JSON_VALUE,
             examples = @ExampleObject(value = "{\"timestamp\": \"2026-05-27 12:00:00\", \"error\": \"Player not found with id: 1\"}")
         )
+    )
+    @ApiResponse(
+        responseCode = "500",
+        description = "Error: Internal Server Error",
+        content = @Content(schema = @Schema(hidden = true))
     )
     @GetMapping(value = "/players/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<PlayerWithCommentsDTO> getPlayerById(
@@ -161,6 +176,11 @@ public class PlayerController {
             examples = @ExampleObject(value = "{\"timestamp\": \"2026-05-27 12:00:00\", \"error\": \"Player not found\"}")
         )
     )
+    @ApiResponse(
+        responseCode = "500",
+        description = "Error: Internal Server Error",
+        content = @Content(schema = @Schema(hidden = true))
+    )
     @GetMapping(value = "/players/name/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<PlayerNameDTO> getPlayerName(
             @Parameter(description = "Unique ID of the player to retrieve") 
@@ -186,6 +206,11 @@ public class PlayerController {
     @ApiResponse(
         responseCode = "401",
         description = "Error: Unauthorized",
+        content = @Content(schema = @Schema(hidden = true))
+    )
+    @ApiResponse(
+        responseCode = "500",
+        description = "Error: Internal Server Error",
         content = @Content(schema = @Schema(hidden = true))
     )
     @PostMapping(value = "/players", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -231,6 +256,11 @@ public class PlayerController {
     @ApiResponse(
         responseCode = "403",
         description = "Error: Forbidden",
+        content = @Content(schema = @Schema(hidden = true))
+    )
+    @ApiResponse(
+        responseCode = "500",
+        description = "Error: Internal Server Error",
         content = @Content(schema = @Schema(hidden = true))
     )
     @PutMapping(value = "/players/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -294,6 +324,11 @@ public class PlayerController {
         description = "Error: Forbidden",
         content = @Content(schema = @Schema(hidden = true))
     )
+    @ApiResponse(
+        responseCode = "500",
+        description = "Error: Internal Server Error",
+        content = @Content(schema = @Schema(hidden = true))
+    )
     @DeleteMapping(value = "/players/{id}")
     public ResponseEntity<Void> deletePlayer(
             @Parameter(description = "Unique ID of the player to delete", required = true) 
@@ -323,8 +358,8 @@ public class PlayerController {
         content = @Content(schema = @Schema(hidden = true))
     )
     @ApiResponse(
-        responseCode = "403",
-        description = "Error: Forbidden",
+        responseCode = "500",
+        description = "Error: Internal Server Error",
         content = @Content(schema = @Schema(hidden = true))
     )
     @GetMapping("/players/search")
@@ -357,6 +392,11 @@ public class PlayerController {
     @ApiResponse(
         responseCode = "401",
         description = "Error: Unauthorized",
+        content = @Content(schema = @Schema(hidden = true))
+    )
+    @ApiResponse(
+        responseCode = "500",
+        description = "Error: Internal Server Error",
         content = @Content(schema = @Schema(hidden = true))
     )
     @PostMapping(value = "/players/import", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)

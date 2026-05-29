@@ -6,6 +6,7 @@ import es.ual.dream_team_service.dto.DreamTeamWithPlayersDTO;
 import es.ual.dream_team_service.dto.PlayerNameDTO;
 import es.ual.dream_team_service.dto.PlayerSummaryDTO;
 import es.ual.dream_team_service.repository.DreamTeamRepository;
+import es.ual.dream_team_service.service.DreamTeamService;
 import es.ual.dream_team_service.client.GroqClient;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.Operation;
@@ -23,6 +24,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.Map;
@@ -41,6 +43,9 @@ public class DreamTeamController {
 
     @Autowired
     private GroqClient groqClient;
+
+    @Autowired
+    private DreamTeamService dreamTeamService;
 
     private final String apiKey = System.getenv("GROQ_API_KEY");
 
@@ -66,6 +71,11 @@ public class DreamTeamController {
     @ApiResponse(
         responseCode = "401",
         description = "Error: Unauthorized",
+        content = @Content(schema = @Schema(hidden = true))
+    )
+    @ApiResponse(
+        responseCode = "500",
+        description = "Error: Internal Server Error",
         content = @Content(schema = @Schema(hidden = true))
     )
     @GetMapping(value = "/dream-teams", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -108,64 +118,35 @@ public class DreamTeamController {
         )
     )
     @ApiResponse(
-        responseCode = "500",
-        description = "Error: AI service unavailable or parsing error",
-        content = @Content(
-            mediaType = MediaType.APPLICATION_JSON_VALUE,
-            examples = @ExampleObject(value = "{\"timestamp\": \"2026-05-28 14:30:00\", \"error\": \"Internal server error: Failed to generate Dream Team\"}")
-        )
+        responseCode = "422",
+        description = "Error: Unprocessable Entity",
+        content = @Content(schema = @Schema(hidden = true))
     )
     @ApiResponse(
         responseCode = "401",
         description = "Error: Unauthorized",
         content = @Content(schema = @Schema(hidden = true))
     )
+    @ApiResponse(
+        responseCode = "500",
+        description = "Error: Internal Server Error",
+        content = @Content(schema = @Schema(hidden = true))
+    )
     @PostMapping(value = "/dream-teams", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<DreamTeamWithPlayersDTO> createDreamTeamWithAI(
+        public ResponseEntity<DreamTeamWithPlayersDTO> createDreamTeamWithAI(
             @Parameter(hidden = true) 
             @RequestHeader(value = "X-User-ID", required = true) String userId) throws Exception {
-        List<PlayerSummaryDTO> allPlayers = playerClient.getPlayersSummary();
-        List<PlayerSummaryDTO> playersToSend = allPlayers.stream().limit(50).collect(Collectors.toList());
-        String prompt = "You are an expert football coach. Your task is to generate a starting lineup of exactly 11 players from the provided list. " +
-                "Players list: " + objectMapper.writeValueAsString(playersToSend) + ". " +
-                "STRICT RULES: " +
-                "1. If there are 11 or more players available, you MUST select exactly 11. " +
-                "2. If there are fewer than 11 players available, select ALL of them. " +
-                "3. If the list is empty, return an empty array for 'playerIds'. " +
-                "4. 'name' must be a creative, engaging team name in Spanish. " +
-                "5. Output format: You MUST return a valid JSON object matching the following example exactly. " +
-                "6. PROHIBITED: Do not include markdown code blocks, do not include explanations, do not include prefixes or suffixes. " +
-                "Only output the raw JSON string in this format: " +
-                "{\"name\": \"La Furia Roja\", \"playerIds\": [1, 5, 12, 18, 22, 30, 41, 55, 62, 70, 88]}";
-        Map<String, Object> request = Map.of(
-            "model", "llama-3.1-8b-instant",
-            "messages", List.of(Map.of("role", "user", "content", prompt)),
-            "temperature", 0.7,
-            "max_completion_tokens", 1024
-        );
-        Map<String, Object> response = groqClient.getCompletion("Bearer " + apiKey, request);
-        List<Map<String, Object>> choices = (List<Map<String, Object>>) response.get("choices");
-        String content = (String) ((Map<String, Object>) choices.get(0).get("message")).get("content");
-        content = content.replaceAll("```json", "").replaceAll("```", "").trim();
-        DreamTeam newTeam = objectMapper.readValue(content, DreamTeam.class);
-        newTeam.setUserId(userId);
-        newTeam.setCreatedAt(LocalDateTime.now());
-        DreamTeam savedTeam = repository.save(newTeam);
+        DreamTeam savedTeam = dreamTeamService.generateAndSaveDreamTeam(userId);
+        if (savedTeam.getPlayerIds() == null || savedTeam.getPlayerIds().isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Failed to generate team");
+        }
         List<PlayerNameDTO> playerNames = savedTeam.getPlayerIds().stream()
             .map(id -> {
-                try {
-                    return playerClient.getPlayerName(id);
-                } catch (Exception e) {
-                    return new PlayerNameDTO(id, "Unknown Player");
-                }
+                try { return playerClient.getPlayerName(id); } 
+                catch (Exception e) { return new PlayerNameDTO(id, "Unknown Player"); }
             })
             .collect(Collectors.toList());
-        DreamTeamWithPlayersDTO responseDTO = new DreamTeamWithPlayersDTO(
-            savedTeam.getId(), 
-            savedTeam.getName(), 
-            savedTeam.getUserId(), 
-            playerNames
-        );
-        return ResponseEntity.status(HttpStatus.CREATED).body(responseDTO);
+        return ResponseEntity.status(HttpStatus.CREATED)
+            .body(new DreamTeamWithPlayersDTO(savedTeam.getId(), savedTeam.getName(), userId, playerNames));
     }
 }

@@ -54,6 +54,11 @@ public class CommentController {
             examples = @ExampleObject(value = "[{\"id\": 1, \"userId\": \"firebase_uid_123\", \"playerId\": 1, \"author\": \"user@example.com\", \"text\": \"Amazing player!\", \"rating\": 5, \"latitude\": -23.944841, \"longitude\": -46.330376, \"createdAt\": \"2026-05-27T12:00:00\"}]")
         )
     )
+    @ApiResponse(
+        responseCode = "500",
+        description = "Error: Internal Server Error",
+        content = @Content(schema = @Schema(hidden = true))
+    )
     @GetMapping(value = "/comments/player/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<Comment>> getCommentsByPlayer(
             @Parameter(description = "Unique ID of the player to retrieve comments for", required = true) 
@@ -81,6 +86,11 @@ public class CommentController {
             mediaType = MediaType.APPLICATION_JSON_VALUE,
             examples = @ExampleObject(value = "{\"timestamp\": \"2026-05-27 12:00:00\", \"error\": \"Player not found with id: 1\"}")
         )
+    )
+    @ApiResponse(
+        responseCode = "500",
+        description = "Error: Internal Server Error",
+        content = @Content(schema = @Schema(hidden = true))
     )
     @PostMapping(value = "/comments/player/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Comment> createComment(
@@ -146,6 +156,11 @@ public class CommentController {
     @ApiResponse(
         responseCode = "403",
         description = "Error: Forbidden",
+        content = @Content(schema = @Schema(hidden = true))
+    )
+    @ApiResponse(
+        responseCode = "500",
+        description = "Error: Internal Server Error",
         content = @Content(schema = @Schema(hidden = true))
     )
     @DeleteMapping(value = "/comments/{id}")
