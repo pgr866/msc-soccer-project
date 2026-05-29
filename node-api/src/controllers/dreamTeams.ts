@@ -38,9 +38,10 @@ import type { User } from '../models/user.js';
  *             example:
  *               error: "Internal Server Error"
  */
-export const getAllDreamTeams = async (req: Request, res: Response): Promise<Response> => {
+export const getAllDreamTeams = async (req: Request & { user?: User }, res: Response): Promise<Response> => {
     try {
         const userId = req.user?.uid;
+        if (!userId) return res.status(401).json({ message: "Unauthorized" });
         const dreamTeams = await DreamTeam.find({ userId });
         const response = await Promise.all(dreamTeams.map(async (dt) => {
             const playerNames = await Promise.all(dt.playerIds.map(async (id) => {
@@ -99,6 +100,7 @@ export const getAllDreamTeams = async (req: Request, res: Response): Promise<Res
 export const createDreamTeamWithAI = async (req: Request & { user?: User }, res: Response): Promise<Response> => {
     try {
         const userId = req.user?.uid;
+        if (!userId) return res.status(401).json({ message: "Unauthorized" });
         const players = await Player.find().limit(50);
         const service = new DreamTeamService(new ChatGroq({
             apiKey: configuration.groq.apiKey,

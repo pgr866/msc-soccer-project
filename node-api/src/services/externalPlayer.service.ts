@@ -117,6 +117,6 @@ export const importAndSavePlayer = async (playerId: number, latitude: number, lo
     });
     const savedPlayer = await player.save();
     const playerObj = savedPlayer.toJSON();
-    delete playerObj.comments;
-    return playerObj;
+    const { comments: _, ...playerWithoutComments } = playerObj;
+    return playerWithoutComments;
 };
