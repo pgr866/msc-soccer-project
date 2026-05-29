@@ -4,6 +4,7 @@ import es.ual.player_service.domain.Player;
 import es.ual.player_service.dto.ExternalPlayerDTO;
 import es.ual.player_service.dto.PlayersImportRequestDTO;
 import es.ual.player_service.dto.PlayerNameDTO;
+import es.ual.player_service.dto.PlayerSummaryDTO;
 import es.ual.player_service.dto.CommentDTO;
 import es.ual.player_service.dto.PlayerWithCommentsDTO;
 import es.ual.player_service.repository.PlayerRepository;
@@ -37,6 +38,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api")
@@ -76,6 +78,29 @@ public class PlayerController {
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateEnd) {
         List<Player> players = playerRepository.findByFilters(query, dateStart, dateEnd);
         return ResponseEntity.ok(players);
+    }
+
+    @Operation(
+        summary = "Get player summary list",
+        description = "Retrieves a lightweight list of all players containing only essential information."
+    )
+    @ApiResponse(
+        responseCode = "200",
+        description = "Summary list obtained",
+        content = @Content(
+            mediaType = MediaType.APPLICATION_JSON_VALUE,
+            examples = @ExampleObject(value = "[{\"id\": 1, \"name\": \"Neymar\", \"position\": \"Attacker\", \"team\": \"Santos\", \"league\": \"Serie A\", \"age\": 34, \"height\": 1.75, \"weight\": 68}]")
+        )
+    )
+    @GetMapping(value = "/players/summary", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<PlayerSummaryDTO>> getPlayersSummary() {
+        List<PlayerSummaryDTO> summary = playerRepository.findAll().stream()
+            .map(p -> new PlayerSummaryDTO(
+                p.getId(), p.getName(), p.getPosition(), 
+                p.getTeam(), p.getLeague(), p.getAge(), 
+                p.getHeight(), p.getWeight()
+            )).collect(Collectors.toList());
+        return ResponseEntity.ok(summary);
     }
 
     @Operation(
