@@ -4,7 +4,8 @@ import { authGuard } from '@/app/core/guards/auth.guard';
 export const routes: Routes = [
   {
     path: '',
-    loadChildren: () => import('./features/tabs/tabs.routes').then(m => m.routes),
+    loadChildren: () =>
+      import('./features/tabs/tabs.routes').then((m) => m.routes),
   },
   {
     path: 'login',
@@ -20,7 +21,12 @@ export const routes: Routes = [
     path: 'player-detail/:playerId',
     loadComponent: () =>
       import('./features/player-detail/player-detail.page').then((m) => m.PlayerDetailPage),
-    // canActivate: [authGuard],
+  },
+  {
+    path: 'import-players',
+    loadComponent: () =>
+      import('./features/import-players/import-players.page').then((m) => m.ImportPlayersPage),
+    canActivate: [authGuard],
     // data: { role: 'ADMIN' }
   },
 ];

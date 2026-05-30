@@ -1,11 +1,11 @@
 import { Component, inject, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import {
   IonContent, IonButton, IonTextarea, IonList, IonItem, IonLabel,
   IonCard, IonCardHeader, IonCardTitle,
-  IonCardSubtitle, IonCardContent, IonIcon, IonSpinner
+  IonCardSubtitle, IonCardContent, IonIcon, IonSpinner, IonNote
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import { trash, create, newspaper, send, star, starOutline } from 'ionicons/icons';
@@ -23,12 +23,11 @@ import { AlertService } from '@/app/core/services/alert.service';
   imports: [
     IonContent, IonButton, IonTextarea, IonList, IonItem, IonLabel,
     IonCard, IonCardHeader, IonCardTitle,
-    IonCardSubtitle, IonCardContent, IonIcon, IonSpinner,
+    IonCardSubtitle, IonCardContent, IonIcon, IonSpinner, IonNote,
     CommonModule, FormsModule, RouterLink, GenericHeaderComponent
   ],
 })
 export class PlayerDetailPage implements OnInit {
-  private route = inject(ActivatedRoute);
   private router = inject(Router);
   private playerService = inject(PlayerService);
   private commentService = inject(CommentService);

@@ -1,0 +1,55 @@
+<app-generic-header title="Importar Jugadores" backRoute="/players"></app-generic-header>
+
+<ion-content class="ion-padding">
+  <div class="centered-content">
+
+    <ion-searchbar [value]="searchQuery" (ionInput)="searchQuery = $event.detail.value || ''" (keyup.enter)="search()"
+      class="ion-margin-bottom" placeholder="Buscar jugador (mínimo 3 caracteres)">
+    </ion-searchbar>
+
+    <ion-list class="ion-margin-horizontal">
+      @for (player of playerService.searchImportResults().slice(0, displayLimit); track player.id) {
+      <ion-item button
+        (click)="playerService.toggleSelectedId(+player.id, !playerService.selectedIds().includes(+player.id))">
+        <ion-checkbox slot="start" style="pointer-events: none;"
+          [checked]="playerService.selectedIds().includes(+player.id)">
+        </ion-checkbox>
+        <ion-avatar slot="start"><img [src]="player.photoUrl" [alt]="player.name" /></ion-avatar>
+        <ion-label>
+          <h2>{{ player.name }}</h2>
+          <p>
+            @let hasPos = player.position;
+            @let hasNat = player.nationality;
+            @let hasAge = player.age;
+            @let hasNum = player.number;
+            @let hasHgt = player.height;
+            @let hasWgt = player.weight;
+            @if (hasPos) { <span>{{ player.position }}</span> }
+            @if (hasPos && (hasNat || hasAge || hasNum || hasHgt || hasWgt)) { <span> | </span> }
+            @if (hasNat) { <span>{{ player.nationality }}</span> }
+            @if (hasNat && (hasAge || hasNum || hasHgt || hasWgt)) { <span> | </span> }
+            @if (hasAge) { <span>{{ player.age }} años</span> }
+            @if (hasAge && (hasNum || hasHgt || hasWgt)) { <span> | </span> }
+            @if (hasNum) { <span>#{{ player.number }}</span> }
+            @if (hasNum && (hasHgt || hasWgt)) { <span> | </span> }
+            @if (hasHgt) { <span>{{ player.height }}m</span> }
+            @if (hasHgt && hasWgt) { <span> | </span> }
+            @if (hasWgt) { <span>{{ player.weight }}kg</span> }
+          </p>
+        </ion-label>
+      </ion-item>
+      }
+    </ion-list>
+
+    @if (displayLimit < playerService.searchImportResults().length) { <ion-button expand="block"
+      class="medium-centered-button ion-margin-top" fill="outline" (click)="displayLimit = displayLimit + 20">
+      Cargar más jugadores
+      </ion-button>
+      }
+
+      <ion-button expand="block" class="medium-centered-button ion-margin-top"
+        [disabled]="playerService.selectedIds().length === 0" (click)="importSelected()">
+        Importar {{ playerService.selectedIds().length }} seleccionados
+      </ion-button>
+  </div>
+</ion-content>

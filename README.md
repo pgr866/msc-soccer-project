@@ -58,7 +58,7 @@ cualquier rol:
 cabecera -> toggle de backends    botón iniciar (/login) / cerrar sesión (/players)
 
 /players
-  barra de búsqueda de jugadores por nombre, equipo o liga (botón de búsqueda al final de barra estilo youtube)
+  barra de búsqueda de jugadores por nombre, equipo o liga
   filtro fecha de alta -> dos datepicker: fecha inicio, fecha fin   botón importar jugadores (/import-players)   botón crear jugador (/create-player)
   lista de jugadores -> cada ítem lleva a detalles jugador (/player-detail/:id)
 
@@ -80,7 +80,7 @@ tabs: noticias    jugadores   equipazos
 
 /import-players
   barra de búsqueda de jugador por nombre en api externa
-  lista de 20 primeros resultados (botón de búsqueda al final de barra estilo youtube) -> cada ítem tiene checkbox, imagen y datos de jugador
+  lista de 20 primeros resultados -> cada ítem tiene checkbox, imagen y datos de jugador
   botón importar seleccionados en base de datos
 
 /create-player

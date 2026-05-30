@@ -111,8 +111,8 @@ const swaggerOptions: Options = {
                     properties: {
                         id: { type: 'integer' },
                         name: { type: 'string' },
-                        first_name: { type: 'string' },
-                        last_name: { type: 'string' },
+                        firstName: { type: 'string' },
+                        lastName: { type: 'string' },
                         age: { type: 'integer' },
                         birthdate: { type: 'string', format: 'date' },
                         nationality: { type: 'string' },
@@ -120,12 +120,12 @@ const swaggerOptions: Options = {
                         weight: { type: 'number' },
                         number: { type: 'integer' },
                         position: { type: 'string' },
-                        photo_url: { type: 'string' }
+                        photoUrl: { type: 'string' }
                     },
                     example: {
-                        id: 276, name: "Neymar", first_name: "Neymar", last_name: "da Silva Santos Júnior",
+                        id: 276, name: "Neymar", firstName: "Neymar", lastName: "da Silva Santos Júnior",
                         age: 34, birthdate: "1992-02-05", nationality: "Brazil", height: 1.75, weight: 68,
-                        number: 10, position: "Attacker", photo_url: "https://media.api-sports.io/football/players/276.png"
+                        number: 10, position: "Attacker", photoUrl: "https://media.api-sports.io/football/players/276.png"
                     },
                 },
                 PlayersImportRequest: {
