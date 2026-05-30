@@ -11,20 +11,21 @@ import { ToastService } from '@/app/core/services/toast.service';
 import { GenericHeaderComponent } from '@/app/shared/components/generic-header/generic-header.component';
 import { addIcons } from 'ionicons';
 import { add, close, cloudUpload, personAdd } from 'ionicons/icons';
+import { AuthService } from '@/app/core/services/auth.service';
 
 @Component({
   selector: 'app-players',
   templateUrl: './players.page.html',
-  standalone: true,
   imports: [
     IonContent, IonItem, IonList, IonLabel, IonSearchbar,
     IonDatetime, IonModal, IonButton, IonAvatar,
-    IonFab, IonFabButton, IonFabList, IonIcon, // Solo estos
+    IonFab, IonFabButton, IonFabList, IonIcon,
     CommonModule, RouterLink, GenericHeaderComponent
   ]
 })
 export class PlayersPage implements OnInit {
   public playerService = inject(PlayerService);
+  public authService = inject(AuthService);
   private toastService = inject(ToastService);
 
   public searchQuery: string = '';

@@ -4,8 +4,7 @@ import { authGuard } from '@/app/core/guards/auth.guard';
 export const routes: Routes = [
   {
     path: '',
-    redirectTo: 'players',
-    pathMatch: 'full',
+    loadChildren: () => import('./features/tabs/tabs.routes').then(m => m.routes),
   },
   {
     path: 'login',
@@ -18,19 +17,10 @@ export const routes: Routes = [
       import('./features/signup/signup.page').then((m) => m.SignupPage),
   },
   {
-    path: 'players',
+    path: 'player-detail/:playerId',
     loadComponent: () =>
-      import('./features/players/players.page').then((m) => m.PlayersPage),
-  },
-  {
-    path: 'player-detail/:id',
-    loadComponent: () =>
-      import('./features/player-detail/player-detail.page').then(
-        (m) => m.PlayerDetailPage
-      ),
+      import('./features/player-detail/player-detail.page').then((m) => m.PlayerDetailPage),
+    // canActivate: [authGuard],
+    // data: { role: 'ADMIN' }
   },
 ];
-
-// Rutas protegidas con guardias de autenticación y roles (ejemplo)
-// canActivate: [authGuard],
-// data: { role: 'ADMIN' }
