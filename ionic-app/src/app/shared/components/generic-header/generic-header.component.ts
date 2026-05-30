@@ -6,17 +6,18 @@ import { addIcons } from 'ionicons';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '@/app/core/services/auth.service';
 import { BackendConfigService } from '@/app/core/services/backend-config.service';
-import { IonHeader, IonTitle, IonToolbar, IonButton, IonButtons, IonIcon, IonLabel, IonItem, IonToggle } from '@ionic/angular/standalone';
+import { IonHeader, IonTitle, IonToolbar, IonButton, IonButtons, IonIcon, IonLabel, IonItem, IonToggle, IonBackButton } from '@ionic/angular/standalone';
 
 @Component({
   selector: 'app-generic-header',
   templateUrl: './generic-header.component.html',
   styleUrls: ['./generic-header.component.scss'],
   standalone: true,
-  imports: [IonHeader, IonTitle, IonToolbar, IonButton, IonButtons, IonIcon, IonLabel, IonItem, IonToggle, CommonModule, FormsModule, RouterLink],
+  imports: [IonHeader, IonTitle, IonToolbar, IonButton, IonButtons, IonIcon, IonLabel, IonItem, IonToggle, IonBackButton, CommonModule, FormsModule, RouterLink],
 })
 export class GenericHeaderComponent implements OnInit {
   @Input() title: string = '';
+  @Input() backRoute?: string;
 
   private router = inject(Router);
   public authService = inject(AuthService);
@@ -26,14 +27,17 @@ export class GenericHeaderComponent implements OnInit {
     addIcons({ logOutOutline, logInOutline });
   }
 
-  ngOnInit() {}
+  ngOnInit() { }
 
   onToggleChange() {
     this.configService.toggleBackend();
+    setTimeout(() => {
+      window.location.href = '/players';
+    }, 500);
   }
 
   logout() {
     this.authService.logout();
-    this.router.navigate(['/login']);
+    this.router.navigate(['/players']);
   }
 }

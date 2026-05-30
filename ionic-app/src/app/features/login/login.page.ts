@@ -1,8 +1,9 @@
 import { Component, effect, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormGroup, FormControl, Validators } from '@angular/forms';
-import { IonicModule, ToastController, LoadingController } from '@ionic/angular';
+import { IonicModule, LoadingController } from '@ionic/angular';
 import { AuthService } from '@/app/core/services/auth.service';
+import { ToastService } from '@/app/core/services/toast.service';
 import { Router, RouterLink } from '@angular/router';
 
 @Component({
@@ -13,7 +14,7 @@ import { Router, RouterLink } from '@angular/router';
 })
 export class LoginPage {
   private authService = inject(AuthService);
-  private toastController = inject(ToastController);
+  private toastService = inject(ToastService);
   private loadingController = inject(LoadingController);
   private router = inject(Router);
 
@@ -30,47 +31,23 @@ export class LoginPage {
 
   async login() {
     if (this.loginForm.invalid) {
-      this.showErrorMessage('Por favor, completa los campos correctamente.');
+      this.toastService.showToast('Por favor, completa los campos correctamente.', 'error');
       return;
     }
     const loading = await this.loadingController.create({
       message: 'Iniciando sesión...',
-      spinner: 'crescent',
-      duration: 2000
+      spinner: 'crescent'
     });
     await loading.present();
     const { email, password } = this.loginForm.value;
     try {
       await this.authService.login(email!, password!);
       this.loginForm.reset();
-      this.showInfoMessage('Inicio de sesión realizado. Redirigiendo...');
-      setTimeout(() => {
-        this.router.navigate(["/players"]);
-      }, 1000);
+      this.toastService.showToast('Sesión iniciada correctamente', 'success');
     } catch (error: any) {
-      this.showErrorMessage('Error en la autenticación: ' + error.message);
+      this.toastService.showToast('Error: ' + error.message, 'error');
     } finally {
-      loading.dismiss();
+      await loading.dismiss();
     }
-  }
-
-  async showErrorMessage(message: string) {
-    const toast = await this.toastController.create({
-      message,
-      duration: 3000,
-      position: 'bottom',
-      color: 'danger'
-    });
-    toast.present();
-  }
-
-  async showInfoMessage(message: string) {
-    const toast = await this.toastController.create({
-      message,
-      duration: 2000,
-      position: 'bottom',
-      color: 'success'
-    });
-    toast.present();
   }
 }
