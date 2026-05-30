@@ -1,8 +1,19 @@
 export interface Player {
-  id: number;
+  id: string;
   name: string;
+  firstName: string;
+  lastName: string;
   age: number;
-  photo_url: string;
+  birthdate: string;
+  nationality: string;
+  height: number;
+  weight: number;
+  number: number;
+  team: string;
+  league: string;
+  position: string;
+  photoUrl: string;
   latitude: number;
   longitude: number;
+  createdAt: string;
 }

@@ -1,15 +1,77 @@
 <app-generic-header title="Lista de Jugadores"></app-generic-header>
-<ion-content>
-  <ion-list>
-    @for (player of playerService.players(); track player.id) {
-    <ion-item>
-      <ion-label>
-        <h2>{{ player.name }}</h2>
-        <p>{{ player.age }}</p>
-      </ion-label>
-    </ion-item>
-    } @empty {
-    <ion-item>Aún no hay jugadores para mostrar.</ion-item>
-    }
-  </ion-list>
+<ion-content class="ion-padding">
+  <div class="centered-content">
+
+    <ion-searchbar [value]="searchQuery" (ionInput)="searchQuery = $event.detail.value || ''"
+      (keyup.enter)="loadPlayers()" placeholder="Buscar por nombre, equipo o liga">
+    </ion-searchbar>
+
+    <div class="ion-padding-horizontal filter-row">
+      <strong>Filtro Fecha:</strong>
+      <ion-button fill="outline" color="secondary" (click)="startDateModal.present()">
+        {{ startDate ? (startDate | date:'dd-MM-yyyy') : 'Fecha Inicio' }}
+      </ion-button>
+      <span>-</span>
+      <ion-button fill="outline" color="secondary" (click)="endDateModal.present()">
+        {{ endDate ? (endDate | date:'dd-MM-yyyy') : 'Fecha Fin' }}
+      </ion-button>
+    </div>
+
+    <ion-list class="ion-margin-top">
+      @for (player of playerService.players(); track player.id) {
+      <ion-item [routerLink]="['/player-detail', player.id]">
+        <ion-avatar slot="start">
+          <img [src]="player.photoUrl" [alt]="player.name" />
+        </ion-avatar>
+        <ion-label>
+          <h2>{{ player.name }}</h2>
+          <p>
+            Equipo: {{ player.team }} | Liga: {{ player.league }}
+          </p>
+          <p>
+            <strong>Posición:</strong> {{ player.position }} |
+            <strong>Nacionalidad:</strong> {{ player.nationality }} |
+            <strong>Edad:</strong> {{ player.age }}
+          </p>
+        </ion-label>
+      </ion-item>
+      } @empty {
+      <ion-item>Aún no hay jugadores para mostrar.</ion-item>
+      }
+    </ion-list>
+  </div>
+
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed" class="ion-margin">
+    <ion-fab-button>
+      <ion-icon name="add"></ion-icon>
+    </ion-fab-button>
+    <ion-fab-list side="top">
+      <ion-fab-button routerLink="/import-players" color="secondary" title="Importar">
+        <ion-icon name="cloud-upload"></ion-icon>
+      </ion-fab-button>
+      <ion-fab-button routerLink="/create-player" color="primary" title="Crear">
+        <ion-icon name="person-add"></ion-icon>
+      </ion-fab-button>
+    </ion-fab-list>
+  </ion-fab>
+
+  <ion-modal #startDateModal>
+    <ng-template>
+      <ion-content>
+        <ion-datetime presentation="date" [value]="startDate"
+          (ionChange)="handleDateChange($event.detail.value, 'start'); startDateModal.dismiss()">
+        </ion-datetime>
+      </ion-content>
+    </ng-template>
+  </ion-modal>
+
+  <ion-modal #endDateModal>
+    <ng-template>
+      <ion-content>
+        <ion-datetime presentation="date" [value]="endDate"
+          (ionChange)="handleDateChange($event.detail.value, 'end'); endDateModal.dismiss()">
+        </ion-datetime>
+      </ion-content>
+    </ng-template>
+  </ion-modal>
 </ion-content>
