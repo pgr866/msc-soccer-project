@@ -1,4 +1,5 @@
 <ion-tabs>
+  @if (authService.currentUser()) {
   <ion-tab-bar slot="bottom">
     <ion-tab-button tab="news" href="/news">
       <ion-icon aria-hidden="true" name="people-outline"></ion-icon>
@@ -15,4 +16,5 @@
       <ion-label>Dream Team</ion-label>
     </ion-tab-button>
   </ion-tab-bar>
+  }
 </ion-tabs>

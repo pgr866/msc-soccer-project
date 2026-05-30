@@ -17,7 +17,7 @@ export const routes: Routes = [
       import('./features/signup/signup.page').then((m) => m.SignupPage),
   },
   {
-    path: 'player-detail/:id',
+    path: 'player-detail/:playerId',
     loadComponent: () =>
       import('./features/player-detail/player-detail.page').then((m) => m.PlayerDetailPage),
     // canActivate: [authGuard],

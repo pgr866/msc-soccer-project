@@ -1,8 +1,7 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { toSignal } from '@angular/core/rxjs-interop';
 import {
   IonContent, IonButton, IonTextarea, IonList, IonItem, IonLabel,
   IonCard, IonCardHeader, IonCardTitle,
@@ -13,10 +12,10 @@ import { trash, create, newspaper, send, star, starOutline } from 'ionicons/icon
 import { PlayerService } from '@/app/core/services/player.service';
 import { AuthService } from '@/app/core/services/auth.service';
 import { GenericHeaderComponent } from '@/app/shared/components/generic-header/generic-header.component';
-import { PlayerDetail } from '@/app/core/models/comment.model';
 import { CommentService } from '@/app/core/services/comment.service';
 import { DeviceService } from '@/app/core/services/device.service';
 import { ToastService } from '@/app/core/services/toast.service';
+import { AlertService } from '@/app/core/services/alert.service';
 
 @Component({
   selector: 'app-player-detail',
@@ -33,12 +32,15 @@ export class PlayerDetailPage implements OnInit {
   private router = inject(Router);
   private playerService = inject(PlayerService);
   private commentService = inject(CommentService);
-  private authService = inject(AuthService);
+  public authService = inject(AuthService);
   private deviceService = inject(DeviceService);
   private toastService = inject(ToastService);
+  private alertService = inject(AlertService);
 
-  public user = toSignal(this.authService.user$);
-  public data = signal<PlayerDetail | null>(null);
+  @Input() playerId?: string;
+
+  public playerDetail = this.playerService.player;
+
   public newCommentText = '';
   public newCommentRating = 4;
 
@@ -47,37 +49,33 @@ export class PlayerDetailPage implements OnInit {
   }
 
   ngOnInit() {
-    const id = this.route.snapshot.paramMap.get('id');
-    if (id) this.loadData(id);
+    console.log('ID recibido:', this.playerId);
+    if (this.playerId) this.playerService.loadPlayer(this.playerId);
   }
 
-  loadData(id: string) {
-    this.playerService.getPlayerDetail(id).subscribe((res) => {
-      this.data.set(res);
-    });
-  }
-
-  deletePlayer(id: string) {
-    this.playerService.deletePlayer(id).subscribe({
-      next: () => {
-        this.toastService.showToast('Jugador eliminado correctamente', 'success');
-        this.router.navigate(['/players']);
-      },
-      error: () => {
-        this.toastService.showToast('Error al eliminar el jugador', 'error');
-      }
-    });
+  async deletePlayer() {
+    if (!this.playerId) return;
+    const confirmed = await this.alertService.showConfirmation('¿Eliminar jugador?', `¿Estás seguro de que quieres eliminar a "${this.playerDetail()?.player.name}"?`);
+    if (confirmed) {
+      this.playerService.deletePlayer(this.playerId).subscribe({
+        next: () => {
+          this.toastService.showToast('Jugador eliminado correctamente', 'success');
+          this.router.navigate(['/players']);
+        },
+        error: () => this.toastService.showToast('Error al eliminar el jugador', 'error')
+      });
+    }
   }
 
   async postComment() {
-    const player = this.data()?.player;
-    if (!player || !this.newCommentText.trim()) {
+    if (!this.playerId) return;
+    if (!this.newCommentText.trim()) {
       await this.toastService.showToast('El comentario no puede estar vacío', 'error');
       return;
     }
     try {
       const coords = await this.deviceService.getCurrentPosition();
-      this.commentService.addComment(player.id, {
+      this.commentService.addComment(this.playerId, {
         text: this.newCommentText,
         rating: this.newCommentRating,
         latitude: coords.lat,
@@ -85,7 +83,7 @@ export class PlayerDetailPage implements OnInit {
       }).subscribe({
         next: () => {
           this.newCommentText = '';
-          this.loadData(player.id);
+          this.playerService.loadPlayer(this.playerId!);
           this.toastService.showToast('Comentario publicado con éxito', 'success');
         },
         error: () => this.toastService.showToast('Error al publicar comentario', 'error')
@@ -95,13 +93,14 @@ export class PlayerDetailPage implements OnInit {
     }
   }
 
-  deleteComment(commentId: string) {
-    const playerId = this.data()?.player.id;
-    if (playerId) {
+  async deleteComment(commentId: string) {
+    if (!this.playerId) return;
+    const confirmed = await this.alertService.showConfirmation('¿Eliminar comentario?', '¿Estás seguro de que quieres eliminar este comentario?');
+    if (confirmed) {
       this.commentService.deleteComment(commentId).subscribe({
         next: () => {
           this.toastService.showToast('Comentario eliminado', 'success');
-          this.loadData(playerId);
+          this.playerService.loadPlayer(this.playerId!);
         },
         error: () => {
           this.toastService.showToast('Error al eliminar el comentario', 'error');

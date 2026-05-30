@@ -1,54 +1,56 @@
 <app-generic-header title="Detalle Jugador" backRoute="/players"></app-generic-header>
 
 <ion-content>
-  @if (data(); as d) {
+  @if (playerDetail(); as player) {
   <div class="movie-poster-container">
-    <img [src]="d.player.photoUrl" [alt]="d.player.name" />
+    <img [src]="player.player.photoUrl" [alt]="player.player.name" />
   </div>
 
   <ion-card class="centered-content">
     <ion-card-header>
       <div class="ion-display-flex ion-justify-content-between ion-align-items-center">
-        <ion-card-title>{{ d.player.name }}</ion-card-title>
-        @if (user()?.role === 'ADMIN') {
+        <ion-card-title>{{ player.player.name }}</ion-card-title>
+        @if (authService.currentUser()?.role === 'ADMIN') {
         <div class="ion-display-flex">
-          <ion-button class="ion-margin-end" fill="solid" [routerLink]="['/create-news', d.player.id]">
+          <ion-button class="ion-margin-end" fill="solid" [routerLink]="['/create-news', player.player.id]">
             <ion-icon name="newspaper"></ion-icon>
           </ion-button>
-          <ion-button class="ion-margin-end" fill="solid" color="warning" [routerLink]="['/edit-player', d.player.id]">
+          <ion-button class="ion-margin-end" fill="solid" color="warning"
+            [routerLink]="['/edit-player', player.player.id]">
             <ion-icon name="create"></ion-icon>
           </ion-button>
-          <ion-button fill="solid" color="danger" (click)="deletePlayer(d.player.id)">
+          <ion-button fill="solid" color="danger" (click)="deletePlayer()">
             <ion-icon name="trash"></ion-icon>
           </ion-button>
         </div>
         }
       </div>
-      <ion-card-subtitle class="font-size-1">{{ d.player.team }} | {{ d.player.league }} | #{{ d.player.number
+      <ion-card-subtitle class="font-size-1">{{ player.player.team }} | {{ player.player.league }} | #{{
+        player.player.number
         }}</ion-card-subtitle>
     </ion-card-header>
 
     <ion-card-content>
       <h3 class="subtitle">Información Personal</h3>
       <ion-list lines="full">
-        <ion-item><ion-label><strong>Nombre:</strong> {{ d.player.firstName }} {{ d.player.lastName
+        <ion-item><ion-label><strong>Nombre:</strong> {{ player.player.firstName }} {{ player.player.lastName
             }}</ion-label></ion-item>
-        <ion-item><ion-label><strong>Posición:</strong> {{ d.player.position }}</ion-label></ion-item>
-        <ion-item><ion-label><strong>Edad:</strong> {{ d.player.age }} años</ion-label></ion-item>
-        <ion-item><ion-label><strong>Fecha Nacimiento:</strong> {{ d.player.birthdate | date:'dd/MM/yyyy'
+        <ion-item><ion-label><strong>Posición:</strong> {{ player.player.position }}</ion-label></ion-item>
+        <ion-item><ion-label><strong>Edad:</strong> {{ player.player.age }} años</ion-label></ion-item>
+        <ion-item><ion-label><strong>Fecha Nacimiento:</strong> {{ player.player.birthdate | date:'dd/MM/yyyy'
             }}</ion-label></ion-item>
-        <ion-item><ion-label><strong>Nacionalidad:</strong> {{ d.player.nationality }}</ion-label></ion-item>
-        <ion-item><ion-label><strong>Físico:</strong> {{ d.player.height }}m / {{ d.player.weight
+        <ion-item><ion-label><strong>Nacionalidad:</strong> {{ player.player.nationality }}</ion-label></ion-item>
+        <ion-item><ion-label><strong>Físico:</strong> {{ player.player.height }}m / {{ player.player.weight
             }}kg</ion-label></ion-item>
-        <ion-item><ion-label><strong>Alta en Sistema:</strong> {{ d.player.createdAt | date:'shortDate'
+        <ion-item><ion-label><strong>Alta en Sistema:</strong> {{ player.player.createdAt | date:'shortDate'
             }}</ion-label></ion-item>
       </ion-list>
 
       <h3 class="subtitle ion-padding-top">Ubicación en la que se añadió</h3>
       <div class="map-container ion-margin-vertical">
         <img
-          [src]="'https://maps.googleapis.com/maps/api/staticmap?center=' + d.player.latitude + ',' + d.player.longitude + '&zoom=3&size=400x250&markers=color:red%7C' + d.player.latitude + ',' + d.player.longitude + '&key=AIzaSyAox2bEMtyviZG9-naimV5hrGFV3iCCdJU'" />
-        <p class="ion-text-center">Lat: {{ d.player.latitude }}, Long: {{ d.player.longitude }}</p>
+          [src]="'https://maps.googleapis.com/maps/api/staticmap?center=' + player.player.latitude + ',' + player.player.longitude + '&zoom=3&size=400x250&markers=color:red%7C' + player.player.latitude + ',' + player.player.longitude + '&key=AIzaSyAox2bEMtyviZG9-naimV5hrGFV3iCCdJU'" />
+        <p class="ion-text-center">Lat: {{ player.player.latitude }}, Long: {{ player.player.longitude }}</p>
       </div>
 
       <h3 class="subtitle">Comentarios</h3>
@@ -59,7 +61,7 @@
           <div class="ion-text-center ion-text-nowrap">
             @for (i of [1, 2, 3, 4, 5]; track i) {
             <ion-icon [name]="i <= newCommentRating ? 'star' : 'star-outline'" (click)="newCommentRating = i"
-              color="warning" style="font-size: 20px; cursor: pointer;">
+              color="warning" class="cursor-pointer font-size-20px">
             </ion-icon>
             }
           </div>
@@ -70,8 +72,8 @@
       </div>
 
       <ion-list>
-        @if (d.comments.length > 0) {
-        @for (comment of d.comments.slice().reverse(); track comment.id) {
+        @if (player.comments.length > 0) {
+        @for (comment of player.comments.slice().reverse(); track comment.id) {
         <ion-item>
           <ion-label>
             <div class="ion-display-flex ion-justify-content-between ion-align-items-center">
@@ -92,7 +94,7 @@
             <p class="font-size-1">{{ comment.text }}</p>
           </ion-label>
 
-          @if (user()?.role === 'ADMIN') {
+          @if (authService.currentUser()?.role === 'ADMIN') {
           <ion-button slot="end" fill="solid" color="danger" (click)="deleteComment(comment.id)">
             <ion-icon name="trash"></ion-icon>
           </ion-button>
@@ -110,7 +112,7 @@
     </ion-card-content>
   </ion-card>
   } @else {
-  <ion-spinner class="centered-content" name="crescent"></ion-spinner>
+  <ion-spinner class="centered-spinner" name="crescent"></ion-spinner>
   }
   <div class="ion-padding"></div>
 </ion-content>
