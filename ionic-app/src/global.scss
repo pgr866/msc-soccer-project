@@ -229,3 +229,87 @@ ion-card-title {
     height: 350px;
   }
 }
+
+ion-toolbar {
+  --color: oklch(1 0 0);
+  --ion-text-color-rgb: oklch(1 0 0);
+  --padding-start: 50px;
+  ion-title {
+    font-weight: 700;
+  }
+}
+
+ion-list {
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+ion-button,
+ion-item,
+ion-list,
+ion-input,
+ion-card,
+ion-searchbar,
+img {
+  --border-radius: 1rem !important;
+  border-radius: 1rem !important;
+}
+
+ion-card-title {
+  font-size: 1.6rem;
+  font-weight: bold;
+  color: var(--ion-card-color);
+}
+
+ion-modal {
+  --height: 400px;
+  --width: 350px;
+  --border-radius: 16px;
+
+  ion-datetime {
+    height: 100%;
+    width: 100%;
+  }
+}
+
+.filter-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sc-ion-searchbar-md-h {
+  --background: var(--ion-item-background);
+}
+
+.centered-content {
+  max-width: 1000px;
+  margin: 0 auto !important;
+  width: 100%;
+}
+
+.movie-poster-container {
+  text-align: center;
+  padding: 20px;
+  margin-bottom: 20px;
+  background: var(--ion-card-background);
+  img {
+    box-shadow: 0 4px 15px var(--ion-text-color);
+    height: 350px;
+  }
+}
+
+.fav-button {
+  font-size: 1.3rem;
+  --ripple-color: transparent;
+}
+
+.font-size-1 {
+  font-size: 1rem !important;
+}
+
+.subtitle {
+  border-bottom: 1px solid;
+  padding-top: 25px;
+  padding-bottom: 5px;
+}

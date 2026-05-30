@@ -1,29 +1,57 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { IonContent, IonItem, IonList, IonLabel } from '@ionic/angular/standalone';
+import { RouterLink } from '@angular/router';
+import {
+  IonContent, IonItem, IonList, IonLabel, IonSearchbar,
+  IonDatetime, IonModal, IonButton, IonAvatar,
+  IonFab, IonFabButton, IonFabList, IonIcon
+} from '@ionic/angular/standalone';
 import { PlayerService } from '@/app/core/services/player.service';
 import { GenericHeaderComponent } from '@/app/shared/components/generic-header/generic-header.component';
+import { addIcons } from 'ionicons';
+import { add, close, cloudUpload, personAdd } from 'ionicons/icons';
 
 @Component({
   selector: 'app-players',
   templateUrl: './players.page.html',
   standalone: true,
-  imports: [IonContent, IonItem, IonList, IonLabel, CommonModule, FormsModule, GenericHeaderComponent]
+  imports: [
+    IonContent, IonItem, IonList, IonLabel, IonSearchbar,
+    IonDatetime, IonModal, IonButton, IonAvatar,
+    IonFab, IonFabButton, IonFabList, IonIcon, // Solo estos
+    CommonModule, RouterLink, GenericHeaderComponent
+  ]
 })
 export class PlayersPage implements OnInit {
   public playerService = inject(PlayerService);
+  public searchQuery: string = '';
+  public startDate: string | undefined = undefined;
+  public endDate: string | undefined = undefined;
 
-  ngOnInit() {
-    this.playerService.getPlayers();
-    this.ensureDefaultPlayer();
+  constructor() {
+    addIcons({ add, close, cloudUpload, personAdd });
   }
 
-  private ensureDefaultPlayer() {
-    if (!this.playerService.player()) {
-      (this.playerService as any)._player.set({
-        id: 0, name: 'Player1', age: 0, photo_url: '', latitude: 0, longitude: 0
-      });
-    }
+  ngOnInit() {
+    this.loadPlayers();
+  }
+
+  handleDateChange(value: string | string[] | null | undefined, type: 'start' | 'end') {
+    const dateValue = Array.isArray(value) ? value[0] : value;
+    if (type === 'start') this.startDate = dateValue || undefined;
+    else this.endDate = dateValue || undefined;
+    this.loadPlayers();
+  }
+
+  private formatDate(dateStr: string | undefined): string | undefined {
+    return dateStr ? dateStr.split('T')[0] : undefined;
+  }
+
+  loadPlayers() {
+    this.playerService.getPlayers(
+      this.searchQuery,
+      this.formatDate(this.startDate),
+      this.formatDate(this.endDate)
+    );
   }
 }
