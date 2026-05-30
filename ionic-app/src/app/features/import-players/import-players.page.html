@@ -8,11 +8,12 @@
     </ion-searchbar>
 
     <ion-list class="ion-margin-horizontal">
-      @for (player of playerService.searchImportResults().slice(0, displayLimit); track player.id) {
+      @if (searchImportResults.length > 0) {
+      @for (player of searchImportResults.slice(0, displayLimit); track player.id) {
       <ion-item button
-        (click)="playerService.toggleSelectedId(+player.id, !playerService.selectedIds().includes(+player.id))">
+        (click)="toggleSelectedId(+player.id, !selectedIds.includes(+player.id))">
         <ion-checkbox slot="start" style="pointer-events: none;"
-          [checked]="playerService.selectedIds().includes(+player.id)">
+          [checked]="selectedIds.includes(+player.id)">
         </ion-checkbox>
         <ion-avatar slot="start"><img [src]="player.photoUrl" [alt]="player.name" /></ion-avatar>
         <ion-label>
@@ -39,17 +40,24 @@
         </ion-label>
       </ion-item>
       }
+      } @else {
+        <ion-item lines="none">
+          <ion-label class="ion-text-center" color="medium">
+            <p>No se encontraron jugadores para la búsqueda.</p>
+          </ion-label>
+        </ion-item>
+        }
     </ion-list>
 
-    @if (displayLimit < playerService.searchImportResults().length) { <ion-button expand="block"
+    @if (displayLimit < searchImportResults.length) { <ion-button expand="block"
       class="medium-centered-button ion-margin-top" fill="outline" (click)="displayLimit = displayLimit + 20">
       Cargar más jugadores
       </ion-button>
       }
 
       <ion-button expand="block" class="medium-centered-button ion-margin-top"
-        [disabled]="playerService.selectedIds().length === 0" (click)="importSelected()">
-        Importar {{ playerService.selectedIds().length }} seleccionados
+        [disabled]="selectedIds.length === 0" (click)="importSelected()">
+        Importar {{ selectedIds.length }} seleccionados
       </ion-button>
   </div>
 </ion-content>

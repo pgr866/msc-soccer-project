@@ -1,19 +1,19 @@
-<app-generic-header title="Lista de Jugadores"></app-generic-header>
+<app-generic-header title="Lista de Jugadores" [favIcon]="true"></app-generic-header>
 <ion-content class="ion-padding">
   <div class="centered-content">
 
-    <ion-searchbar [value]="searchQuery" (ionInput)="searchQuery = $event.detail.value || ''"
+    <ion-searchbar [value]="playerService.searchQuery()" (ionInput)="updateSearch($event.detail.value)"
       (keyup.enter)="loadPlayers()" placeholder="Buscar por nombre, equipo o liga">
     </ion-searchbar>
 
     <div class="ion-padding-horizontal filter-row">
       <strong>Filtro Fecha:</strong>
       <ion-button fill="outline" color="secondary" (click)="startDateModal.present()">
-        {{ startDate ? (startDate | date:'dd-MM-yyyy') : 'Fecha Inicio' }}
+        {{ playerService.startDate() ? (playerService.startDate() | date:'dd-MM-yyyy') : 'Fecha Inicio' }}
       </ion-button>
       <span>-</span>
       <ion-button fill="outline" color="secondary" (click)="endDateModal.present()">
-        {{ endDate ? (endDate | date:'dd-MM-yyyy') : 'Fecha Fin' }}
+        {{ playerService.endDate() ? (playerService.endDate() | date:'dd-MM-yyyy') : 'Fecha Fin' }}
       </ion-button>
     </div>
 
@@ -21,7 +21,7 @@
       @for (player of playerService.players(); track player.id) {
       <ion-item [routerLink]="['/player-detail', player.id]">
         <ion-avatar slot="start">
-          <img [src]="player.photoUrl" [alt]="player.name" />
+          <img [src]="player.photoUrl || 'https://media.api-sports.io/football/players/0.png'" [alt]="player.name" />
         </ion-avatar>
         <ion-label>
           <h2>{{ player.name }}</h2>
@@ -60,9 +60,18 @@
 
   <ion-modal #startDateModal>
     <ng-template>
+      <ion-header>
+        <ion-toolbar>
+          <ion-buttons slot="start">
+            <ion-button (click)="resetDate('start')">Limpiar</ion-button>
+          </ion-buttons>
+          <ion-buttons slot="end">
+            <ion-button (click)="confirmStartDate()">Confirmar</ion-button>
+          </ion-buttons>
+        </ion-toolbar>
+      </ion-header>
       <ion-content>
-        <ion-datetime presentation="date" [value]="startDate"
-          (ionChange)="handleDateChange($event.detail.value, 'start'); startDateModal.dismiss()">
+        <ion-datetime #startDatetime presentation="date" [value]="playerService.startDate()">
         </ion-datetime>
       </ion-content>
     </ng-template>
@@ -70,9 +79,18 @@
 
   <ion-modal #endDateModal>
     <ng-template>
+      <ion-header>
+        <ion-toolbar>
+          <ion-buttons slot="start">
+            <ion-button (click)="resetDate('end')">Limpiar</ion-button>
+          </ion-buttons>
+          <ion-buttons slot="end">
+            <ion-button (click)="confirmEndDate()">Confirmar</ion-button>
+          </ion-buttons>
+        </ion-toolbar>
+      </ion-header>
       <ion-content>
-        <ion-datetime presentation="date" [value]="endDate"
-          (ionChange)="handleDateChange($event.detail.value, 'end'); endDateModal.dismiss()">
+        <ion-datetime #endDatetime presentation="date" [value]="playerService.endDate()">
         </ion-datetime>
       </ion-content>
     </ng-template>

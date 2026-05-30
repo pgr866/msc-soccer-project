@@ -5,7 +5,7 @@ import { Router, RouterLink } from '@angular/router';
 import {
   IonContent, IonButton, IonTextarea, IonList, IonItem, IonLabel,
   IonCard, IonCardHeader, IonCardTitle,
-  IonCardSubtitle, IonCardContent, IonIcon, IonSpinner, IonNote
+  IonCardContent, IonIcon, IonSpinner, IonNote
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import { trash, create, newspaper, send, star, starOutline } from 'ionicons/icons';
@@ -23,7 +23,7 @@ import { AlertService } from '@/app/core/services/alert.service';
   imports: [
     IonContent, IonButton, IonTextarea, IonList, IonItem, IonLabel,
     IonCard, IonCardHeader, IonCardTitle,
-    IonCardSubtitle, IonCardContent, IonIcon, IonSpinner, IonNote,
+    IonCardContent, IonIcon, IonSpinner, IonNote,
     CommonModule, FormsModule, RouterLink, GenericHeaderComponent
   ],
 })
@@ -48,8 +48,16 @@ export class PlayerDetailPage implements OnInit {
   }
 
   ngOnInit() {
-    console.log('ID recibido:', this.playerId);
-    if (this.playerId) this.playerService.loadPlayer(this.playerId);
+    if (this.playerId) this.loadPlayer(this.playerId);
+  }
+
+  loadPlayer(id: string) {
+    this.playerService.getPlayerDetail(id)
+      .subscribe({
+        error: () => {
+          this.toastService.showToast('Error al cargar los detalles del jugador', 'error');
+        }
+      });
   }
 
   async deletePlayer() {
@@ -82,7 +90,7 @@ export class PlayerDetailPage implements OnInit {
       }).subscribe({
         next: () => {
           this.newCommentText = '';
-          this.playerService.loadPlayer(this.playerId!);
+          this.loadPlayer(this.playerId!);
           this.toastService.showToast('Comentario publicado con éxito', 'success');
         },
         error: () => this.toastService.showToast('Error al publicar comentario', 'error')
@@ -99,7 +107,7 @@ export class PlayerDetailPage implements OnInit {
       this.commentService.deleteComment(commentId).subscribe({
         next: () => {
           this.toastService.showToast('Comentario eliminado', 'success');
-          this.playerService.loadPlayer(this.playerId!);
+          this.loadPlayer(this.playerId!);
         },
         error: () => {
           this.toastService.showToast('Error al eliminar el comentario', 'error');

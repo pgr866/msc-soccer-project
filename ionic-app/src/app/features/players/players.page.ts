@@ -1,10 +1,11 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
+
 import {
   IonContent, IonItem, IonList, IonLabel, IonSearchbar,
-  IonDatetime, IonModal, IonButton, IonAvatar,
-  IonFab, IonFabButton, IonFabList, IonIcon
+  IonDatetime, IonModal, IonButton, IonButtons, IonAvatar, IonHeader,
+  IonFab, IonFabButton, IonFabList, IonIcon, IonToolbar,
 } from '@ionic/angular/standalone';
 import { PlayerService } from '@/app/core/services/player.service';
 import { ToastService } from '@/app/core/services/toast.service';
@@ -18,8 +19,8 @@ import { AuthService } from '@/app/core/services/auth.service';
   templateUrl: './players.page.html',
   imports: [
     IonContent, IonItem, IonList, IonLabel, IonSearchbar,
-    IonDatetime, IonModal, IonButton, IonAvatar,
-    IonFab, IonFabButton, IonFabList, IonIcon,
+    IonDatetime, IonModal, IonButton, IonButtons, IonAvatar,
+    IonFab, IonFabButton, IonFabList, IonIcon, IonHeader, IonToolbar,
     CommonModule, RouterLink, GenericHeaderComponent
   ]
 })
@@ -28,9 +29,10 @@ export class PlayersPage implements OnInit {
   public authService = inject(AuthService);
   private toastService = inject(ToastService);
 
-  public searchQuery: string = '';
-  public startDate: string | undefined = undefined;
-  public endDate: string | undefined = undefined;
+  @ViewChild('startDateModal') startDateModal!: IonModal;
+  @ViewChild('startDatetime') startDatetime!: IonDatetime;
+  @ViewChild('endDateModal') endDateModal!: IonModal;
+  @ViewChild('endDatetime') endDatetime!: IonDatetime;
 
   constructor() {
     addIcons({ add, close, cloudUpload, personAdd });
@@ -40,28 +42,48 @@ export class PlayersPage implements OnInit {
     this.loadPlayers();
   }
 
-  handleDateChange(value: string | string[] | null | undefined, type: 'start' | 'end') {
-    const dateValue = Array.isArray(value) ? value[0] : value;
-    if (type === 'start') this.startDate = dateValue || undefined;
-    else this.endDate = dateValue || undefined;
-    this.loadPlayers();
-  }
-
-  private formatDate(dateStr: string | undefined): string | undefined {
-    return dateStr ? dateStr.split('T')[0] : undefined;
-  }
-
   loadPlayers() {
-    this.playerService.getPlayers(
-      this.searchQuery,
-      this.formatDate(this.startDate),
-      this.formatDate(this.endDate)
-    ).subscribe({
-      next: () => {
-      },
+    this.playerService.getPlayers().subscribe({
       error: () => {
         this.toastService.showToast('Error al cargar la lista de jugadores', 'error');
       }
     });
+  }
+
+  updateSearch(value: string | null | undefined) {
+    this.playerService.searchQuery.set(value || '');
+    this.loadPlayers();
+  }
+
+  handleDateChange(value: string | string[] | null | undefined, type: 'start' | 'end') {
+    const dateValue = Array.isArray(value) ? value[0] : value;
+    const dateFormatted = dateValue ? dateValue.split('T')[0] : undefined;
+    if (type === 'start') {
+      this.playerService.startDate.set(dateFormatted);
+    } else {
+      this.playerService.endDate.set(dateFormatted);
+    }
+    this.loadPlayers();
+  }
+
+  resetDate(type: 'start' | 'end') {
+    if (type === 'start') {
+      this.playerService.startDate.set(undefined);
+      this.startDateModal.dismiss();
+    } else {
+      this.playerService.endDate.set(undefined);
+      this.endDateModal.dismiss();
+    }
+    this.loadPlayers();
+  }
+
+  confirmStartDate() {
+    this.handleDateChange(this.startDatetime.value, 'start');
+    this.startDateModal.dismiss();
+  }
+
+  confirmEndDate() {
+    this.handleDateChange(this.endDatetime.value, 'end');
+    this.endDateModal.dismiss();
   }
 }

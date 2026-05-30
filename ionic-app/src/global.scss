@@ -45,8 +45,10 @@
   --ion-background-color-rgb: 255, 255, 255;
   --ion-text-color: oklch(0.145 0.008 326);
   --ion-color-primary: oklch(0.596 0.145 163.225);
+  --ion-color-primary-2: oklch(0.38 0.07 168.16);
   --ion-toolbar-background: var(--ion-color-primary) !important;
   --ion-color-primary-contrast: oklch(0.979 0.021 166.113);
+  --ion-color-primary-contrast-rgb: rgb(236, 253, 245);
   --ion-color-secondary: oklch(12.278% 0.0425 278.132);
   --ion-color-secondary-contrast: oklch(0.967 0.001 286.375);
   --ion-color-danger: oklch(43.26% 0.16064 25.42);
@@ -65,13 +67,12 @@
     --ion-background-color-rgb: 31, 31, 31;
     --ion-text-color: oklch(1 0 0);
     --ion-color-primary: oklch(0.38 0.07 168.16);
-    --ion-color-primary-contrast: oklch(0.979 0.021 166.113);
+    --ion-color-primary-2: oklch(0.596 0.145 163.225);
     --ion-color-secondary: oklch(0.967 0.001 286.375);
     --ion-color-secondary-contrast: oklch(12.278% 0.0425 278.132);
     --ion-item-background: oklch(0.212 0.019 322.12);
     --ion-card-color: oklch(0.89 0 0);
     --ion-card-background: oklch(0.212 0.019 322.12);
-    --ion-color-step-100: oklch(0.263 0.024 320.12);
     --ion-border-color: oklch(1 0 0 / 10%);
   }
 }
@@ -81,9 +82,11 @@ ion-tabs .tabs-inner {
 }
 
 ion-toolbar {
-  --color: oklch(1 0 0);
-  --ion-text-color-rgb: oklch(1 0 0);
-  --padding-start: 50px;
+  --color: var(--ion-color-primary-contrast);
+  --ion-text-color-rgb: var(--ion-color-primary-contrast-rgb);
+  --padding-start: 100px;
+  --padding-end: 15px;
+  --background: linear-gradient(90deg, var(--ion-color-primary-2) 0%, var(--ion-color-primary) 80%);
   ion-title {
     font-weight: 700;
   }
@@ -113,15 +116,6 @@ img {
   margin: 0 auto;
 }
 
-ion-toolbar {
-  --color: oklch(1 0 0);
-  --ion-text-color-rgb: oklch(1 0 0);
-  --padding-start: 50px;
-  ion-title {
-    font-weight: 700;
-  }
-}
-
 ion-list {
   padding-top: 0 !important;
   padding-bottom: 0 !important;
@@ -147,6 +141,12 @@ ion-card-title {
   box-shadow: 0 10px 10px rgba(0, 0, 0, 0.2);
   margin: 16px auto;
   --padding-start: 10px;
+}
+
+.interactive-map {
+  display: block;
+  width: 100%;
+  height: 400px;
 }
 
 .buttons {
@@ -182,13 +182,13 @@ ion-card-title {
 }
 
 .small-centered-button {
-  width: 250px;
-  margin: 20px auto 0;
+  width: 200px;
+  margin: 20px auto 0 !important;
 }
 
 .medium-centered-button {
   width: 300px;
-  margin: 20px auto 0;
+  margin: 20px auto 0 !important;
 }
 
 .cursor-pointer {
@@ -236,6 +236,10 @@ ion-card-title {
   margin-bottom: 30px !important;
 }
 
+.label-margin-top {
+  margin-top: 7px !important;
+}
+
 .label-margin-bottom {
   margin-bottom: 7px !important;
 }
@@ -252,15 +256,6 @@ ion-card-title {
   img {
     box-shadow: 0 4px 15px var(--ion-text-color);
     height: 350px;
-  }
-}
-
-ion-toolbar {
-  --color: oklch(1 0 0);
-  --ion-text-color-rgb: oklch(1 0 0);
-  --padding-start: 50px;
-  ion-title {
-    font-weight: 700;
   }
 }
 
@@ -307,7 +302,7 @@ ion-modal {
   --background: var(--ion-item-background);
 }
 
-.movie-poster-container {
+.player-poster-container {
   text-align: center;
   padding: 20px;
   margin-bottom: 20px;
