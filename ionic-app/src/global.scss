@@ -74,6 +74,10 @@
   }
 }
 
+ion-tabs .tabs-inner {
+  height: 100% !important;
+}
+
 ion-toolbar {
   --color: oklch(1 0 0);
   --ion-text-color-rgb: oklch(1 0 0);
@@ -313,3 +317,4 @@ ion-modal {
 .font-size-1 {
   font-size: 1rem !important;
 }
+

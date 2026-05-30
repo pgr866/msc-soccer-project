@@ -15,7 +15,6 @@ import { add, close, cloudUpload, personAdd } from 'ionicons/icons';
 @Component({
   selector: 'app-players',
   templateUrl: './players.page.html',
-  standalone: true,
   imports: [
     IonContent, IonItem, IonList, IonLabel, IonSearchbar,
     IonDatetime, IonModal, IonButton, IonAvatar,

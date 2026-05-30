@@ -21,7 +21,6 @@ import { ToastService } from '@/app/core/services/toast.service';
 @Component({
   selector: 'app-player-detail',
   templateUrl: './player-detail.page.html',
-  standalone: true,
   imports: [
     IonContent, IonButton, IonTextarea, IonList, IonItem, IonLabel,
     IonCard, IonCardHeader, IonCardTitle,

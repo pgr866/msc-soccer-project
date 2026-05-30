@@ -12,7 +12,6 @@ import { IonHeader, IonTitle, IonToolbar, IonButton, IonButtons, IonIcon, IonLab
   selector: 'app-generic-header',
   templateUrl: './generic-header.component.html',
   styleUrls: ['./generic-header.component.scss'],
-  standalone: true,
   imports: [IonHeader, IonTitle, IonToolbar, IonButton, IonButtons, IonIcon, IonLabel, IonItem, IonToggle, IonBackButton, CommonModule, FormsModule, RouterLink],
 })
 export class GenericHeaderComponent implements OnInit {
