@@ -5,7 +5,7 @@ import { Router, RouterLink } from '@angular/router';
 import {
   IonContent, IonButton, IonTextarea, IonList, IonItem, IonLabel,
   IonCard, IonCardHeader, IonCardTitle,
-  IonCardSubtitle, IonCardContent, IonIcon, IonSpinner, IonNote
+  IonCardContent, IonIcon, IonSpinner, IonNote
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import { trash, create, newspaper, send, star, starOutline } from 'ionicons/icons';
@@ -23,7 +23,7 @@ import { AlertService } from '@/app/core/services/alert.service';
   imports: [
     IonContent, IonButton, IonTextarea, IonList, IonItem, IonLabel,
     IonCard, IonCardHeader, IonCardTitle,
-    IonCardSubtitle, IonCardContent, IonIcon, IonSpinner, IonNote,
+    IonCardContent, IonIcon, IonSpinner, IonNote,
     CommonModule, FormsModule, RouterLink, GenericHeaderComponent
   ],
 })

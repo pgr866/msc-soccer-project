@@ -17,6 +17,7 @@ import { IonHeader, IonTitle, IonToolbar, IonButton, IonButtons, IonIcon, IonLab
 export class GenericHeaderComponent implements OnInit {
   @Input() title: string = '';
   @Input() backRoute?: string;
+  @Input() favIcon: boolean = false;
 
   private router = inject(Router);
   public authService = inject(AuthService);

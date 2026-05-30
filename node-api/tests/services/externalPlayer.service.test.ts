@@ -37,8 +37,8 @@ describe('ExternalPlayer Service', () => {
         const players = await service.searchPlayers('Messi');
         
         expect(players[0].name).toBe('Marcelo Messías');
-        expect(players[0].first_name).toBe('Marcelo');
-        expect(players[0].last_name).toBe('Messías');
+        expect(players[0].firstName).toBe('Marcelo');
+        expect(players[0].lastName).toBe('Messías');
     });
 
     test('importAndSavePlayer: should process data and save to DB', async () => {

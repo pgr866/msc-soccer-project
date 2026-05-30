@@ -8,6 +8,7 @@
     </ion-searchbar>
 
     <ion-list class="ion-margin-horizontal">
+      @if (playerService.searchImportResults().length > 0) {
       @for (player of playerService.searchImportResults().slice(0, displayLimit); track player.id) {
       <ion-item button
         (click)="playerService.toggleSelectedId(+player.id, !playerService.selectedIds().includes(+player.id))">
@@ -39,6 +40,13 @@
         </ion-label>
       </ion-item>
       }
+      } @else {
+        <ion-item lines="none">
+          <ion-label class="ion-text-center" color="medium">
+            <p>No se encontraron jugadores para la búsqueda.</p>
+          </ion-label>
+        </ion-item>
+        }
     </ion-list>
 
     @if (displayLimit < playerService.searchImportResults().length) { <ion-button expand="block"

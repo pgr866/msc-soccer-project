@@ -1,11 +1,16 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
-    @if (backRoute) {
-    <ion-buttons slot="start">
-      <ion-back-button [defaultHref]="backRoute"></ion-back-button>
-    </ion-buttons>
-    }
-    <ion-title>{{ title }}</ion-title>
+    <div class="ion-display-flex">
+      <ion-buttons slot="start">
+        @if (favIcon) {
+        <img src="assets/icon/favicon.png" style="width: 24px; height: 24px;">
+        }
+        @if (backRoute) {
+        <ion-back-button [defaultHref]="backRoute"></ion-back-button>
+        }
+      </ion-buttons>
+      <ion-title>{{ title }}</ion-title>
+    </div>
     <ion-buttons slot="end" class="buttons ion-padding-end">
       <ion-item lines="none" class="ion-align-items-start">
         <ion-label class="ion-text-small ion-margin-end">
