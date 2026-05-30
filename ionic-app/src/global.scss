@@ -73,7 +73,6 @@
     --ion-item-background: oklch(0.212 0.019 322.12);
     --ion-card-color: oklch(0.89 0 0);
     --ion-card-background: oklch(0.212 0.019 322.12);
-    --ion-color-step-100: oklch(0.263 0.024 320.12);
     --ion-border-color: oklch(1 0 0 / 10%);
   }
 }
@@ -144,6 +143,12 @@ ion-card-title {
   --padding-start: 10px;
 }
 
+.interactive-map {
+  display: block;
+  width: 100%;
+  height: 400px;
+}
+
 .buttons {
   display: flex;
   gap: 8px;
@@ -177,13 +182,13 @@ ion-card-title {
 }
 
 .small-centered-button {
-  width: 250px;
-  margin: 20px auto 0;
+  width: 200px;
+  margin: 20px auto 0 !important;
 }
 
 .medium-centered-button {
   width: 300px;
-  margin: 20px auto 0;
+  margin: 20px auto 0 !important;
 }
 
 .cursor-pointer {
@@ -229,6 +234,10 @@ ion-card-title {
 
 .margin-bottom {
   margin-bottom: 30px !important;
+}
+
+.label-margin-top {
+  margin-top: 7px !important;
 }
 
 .label-margin-bottom {
@@ -293,7 +302,7 @@ ion-modal {
   --background: var(--ion-item-background);
 }
 
-.movie-poster-container {
+.player-poster-container {
   text-align: center;
   padding: 20px;
   margin-bottom: 20px;

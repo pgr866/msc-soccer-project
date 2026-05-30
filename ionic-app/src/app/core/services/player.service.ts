@@ -1,10 +1,8 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { inject, Injectable, signal, computed, DestroyRef } from '@angular/core';
-import { Subject, switchMap, tap } from 'rxjs';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { inject, Injectable, signal, computed } from '@angular/core';
+import { tap, switchMap } from 'rxjs';
 import { Player } from '@/app/core/models/player.model';
 import { PlayerDetail } from '@/app/core/models/comment.model';
-import { ExternalPlayerDTO } from '@/app/core/models/external-player-dto';
 import { BackendConfigService } from './backend-config.service';
 
 @Injectable({ providedIn: 'root' })
@@ -13,38 +11,26 @@ export class PlayerService {
   private config = inject(BackendConfigService);
   private apiBase = computed(() => this.config.getBaseApi('player'));
 
-  private destroyRef = inject(DestroyRef);
-  private playerRefresh$ = new Subject<string>();
-
+  public searchQuery = signal<string>('');
+  public startDate = signal<string | undefined>(undefined);
+  public endDate = signal<string | undefined>(undefined);
   private _players = signal<Player[]>([]);
   public players = this._players.asReadonly();
 
   private _player = signal<PlayerDetail | null>(null);
   public player = this._player.asReadonly();
 
-  private _searchImportResults = signal<ExternalPlayerDTO[]>([]);
+  private _searchImportResults = signal<Player[]>([]);
   public searchImportResults = this._searchImportResults.asReadonly();
 
   private _selectedIds = signal<number[]>([]);
   public selectedIds = this._selectedIds.asReadonly();
 
-  constructor() {
-    this.playerRefresh$.pipe(
-      switchMap((id: string) => this.http.get<PlayerDetail>(`${this.apiBase()}/players/${id}`)),
-      takeUntilDestroyed(this.destroyRef),
-      tap((response: PlayerDetail) => this._player.set(response))
-    ).subscribe();
-  }
-
-  loadPlayer(id: string) {
-    this.playerRefresh$.next(id);
-  }
-
-  getPlayers(query?: string, dateStart?: string, dateEnd?: string) {
+  getPlayers() {
     let params = new HttpParams();
-    if (query) params = params.set('query', query);
-    if (dateStart) params = params.set('dateStart', dateStart);
-    if (dateEnd) params = params.set('dateEnd', dateEnd);
+    if (this.searchQuery()) params = params.set('query', this.searchQuery());
+    if (this.startDate()) params = params.set('dateStart', this.startDate() || '');
+    if (this.endDate()) params = params.set('dateEnd', this.endDate() || '');
     return this.http.get<Player[]>(`${this.apiBase()}/players`, { params }).pipe(
       tap((response: Player[]) => this._players.set(response || []))
     );
@@ -53,6 +39,12 @@ export class PlayerService {
   getPlayerDetail(id: string) {
     return this.http.get<PlayerDetail>(`${this.apiBase()}/players/${id}`).pipe(
       tap((response: PlayerDetail) => this._player.set(response))
+    );
+  }
+
+  createPlayer(playerData: Player) {
+    return this.http.post<Player>(`${this.apiBase()}/players`, playerData).pipe(
+      switchMap(() => this.getPlayers())
     );
   }
 
@@ -68,29 +60,18 @@ export class PlayerService {
   }
 
   searchExternalPlayers(query: string) {
-    return this.http.get<ExternalPlayerDTO[]>(`${this.apiBase()}/players/search`, {
+    return this.http.get<Player[]>(`${this.apiBase()}/players/search`, {
       params: new HttpParams().set('query', query)
     }).pipe(
-      tap((results: ExternalPlayerDTO[]) => this._searchImportResults.set(results))
+      tap((results: Player[]) => this._searchImportResults.set(results))
     );
   }
 
-  toggleSelectedId(id: number, isSelected: boolean) {
-    this._selectedIds.update((ids: number[]) =>
-      isSelected ? [...ids, id] : ids.filter(i => i !== id)
-    );
-  }
-
-  clearImportState() {
-    this._searchImportResults.set([]);
-    this._selectedIds.set([]);
-  }
-
-  importPlayers(lat: number, lng: number) {
+  importPlayers(selectedIds: number[], lat: number, lng: number) {
     return this.http.post<Player[]>(`${this.apiBase()}/players/import`, {
-      playerIds: this._selectedIds(),
-      latitude: lat,
-      longitude: lng
-    });
+      playerIds: selectedIds, latitude: lat, longitude: lng
+    }).pipe(
+      switchMap(() => this.getPlayers())
+    );
   }
 }

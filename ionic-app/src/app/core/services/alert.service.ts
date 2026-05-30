@@ -12,7 +12,7 @@ export class AlertService {
                 message,
                 buttons: [
                     { text: 'Cancelar', role: 'cancel', handler: () => resolve(false) },
-                    { text: 'Eliminar', role: 'destructive', handler: () => resolve(true) }
+                    { text: 'Confirmar', role: 'destructive', handler: () => resolve(true) }
                 ]
             });
             await alert.present();

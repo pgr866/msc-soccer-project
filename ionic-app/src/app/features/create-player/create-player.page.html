@@ -1,0 +1,159 @@
+<app-generic-header title="Crear Nuevo Jugador" backRoute="/players"></app-generic-header>
+
+<ion-content>
+  <div class="player-poster-container">
+    <img [src]="playerForm.get('photoUrl')?.value || 'https://placehold.co/350x350'" />
+  </div>
+
+  <ion-card class="centered-content ion-padding">
+    <form [formGroup]="playerForm" (ngSubmit)="createPlayer()">
+      <div class="ion-text-center ion-margin-bottom">
+        <ion-item class="ion-margin-top">
+          <ion-label position="stacked">Url de la imagen</ion-label>
+          <ion-input formControlName="photoUrl" maxlength="255" placeholder="URL de la imagen"></ion-input>
+          <ion-button class="ion-margin-top" slot="end" (click)="takePhoto()">
+            <ion-icon name="camera"></ion-icon>&nbsp;Tomar Foto
+          </ion-button>
+        </ion-item>
+      </div>
+
+      <h3 class="subtitle ion-margin-horizontal">Información Técnica</h3>
+      <ion-grid class="ion-no-padding">
+        <ion-row>
+          <ion-col size="6" class="ion-padding-right">
+            <ion-item class="ion-margin-bottom">
+              <ion-label position="stacked">Posición</ion-label>
+              <ion-input formControlName="position" maxlength="50" placeholder="Attacker"></ion-input>
+            </ion-item>
+          </ion-col>
+          <ion-col size="6" class="ion-padding-left">
+            <ion-item class="ion-margin-bottom">
+              <ion-label position="stacked">Dorsal</ion-label>
+              <ion-input type="number" formControlName="number"
+                oninput="if(this.value>99)this.value=99; if(this.value<1)this.value='';" placeholder="9"></ion-input>
+            </ion-item>
+          </ion-col>
+        </ion-row>
+        <ion-row>
+          <ion-col size="6" class="ion-padding-right">
+            <ion-item>
+              <ion-label position="stacked">Equipo</ion-label>
+              <ion-input formControlName="team" maxlength="150" placeholder="Real Madrid"></ion-input>
+            </ion-item>
+          </ion-col>
+          <ion-col size="6" class="ion-padding-left">
+            <ion-item>
+              <ion-label position="stacked">Liga</ion-label>
+              <ion-input formControlName="league" maxlength="150" placeholder="LaLiga"></ion-input>
+            </ion-item>
+          </ion-col>
+        </ion-row>
+      </ion-grid>
+
+      <h3 class="subtitle ion-margin-horizontal">Información Personal</h3>
+      <ion-item class="ion-margin-bottom">
+        <ion-label position="stacked">Nombre completo</ion-label>
+        <ion-input formControlName="name" maxlength="100" placeholder="Kylian Mbappé"></ion-input>
+      </ion-item>
+
+      <ion-grid class="ion-no-padding">
+        <ion-row>
+          <ion-col size="6" class="ion-padding-right">
+            <ion-item class="ion-margin-bottom">
+              <ion-label position="stacked">Nombre</ion-label>
+              <ion-input formControlName="firstName" maxlength="100" placeholder="Kylian"></ion-input>
+            </ion-item>
+          </ion-col>
+          <ion-col size="6" class="ion-padding-left">
+            <ion-item class="ion-margin-bottom">
+              <ion-label position="stacked">Apellido</ion-label>
+              <ion-input formControlName="lastName" maxlength="100" placeholder="Mbappé"></ion-input>
+            </ion-item>
+          </ion-col>
+        </ion-row>
+      </ion-grid>
+
+      <ion-grid class="ion-no-padding">
+        <ion-row>
+          <ion-col size="6" class="ion-padding-right">
+            <ion-item class="ion-margin-bottom">
+              <ion-label position="stacked">Edad</ion-label>
+              <ion-input type="number" formControlName="age"
+                oninput="if(this.value>120)this.value=120;if(parseFloat(this.value)<0)this.value=0;;"
+                placeholder="25"></ion-input>
+            </ion-item>
+          </ion-col>
+          <ion-col size="6" class="ion-padding-left">
+            <ion-item class="ion-margin-bottom">
+              <ion-label position="stacked">Nacionalidad</ion-label>
+              <ion-input formControlName="nationality" maxlength="100" placeholder="Francia"></ion-input>
+            </ion-item>
+          </ion-col>
+        </ion-row>
+        <ion-row>
+          <ion-col size="6" class="ion-padding-right">
+            <ion-item>
+              <ion-label position="stacked">Altura (m)</ion-label>
+              <ion-input type="number" formControlName="height" step="0.01"
+                oninput="if(parseFloat(this.value)>3)this.value=3;if(parseFloat(this.value)<0)this.value=0;"
+                placeholder="1.78"></ion-input>
+            </ion-item>
+          </ion-col>
+          <ion-col size="6" class="ion-padding-left">
+            <ion-item>
+              <ion-label position="stacked">Peso (kg)</ion-label>
+              <ion-input type="number" formControlName="weight" step="0.01"
+                oninput="if(parseFloat(this.value)>300)this.value=300;if(parseFloat(this.value)<0)this.value=0;"
+                placeholder="75"></ion-input>
+            </ion-item>
+          </ion-col>
+        </ion-row>
+      </ion-grid>
+
+      <ion-item class="ion-margin-top">
+        <ion-button class="ion-margin-end" (click)="dateModal.present()">
+          <ion-icon name="calendar"></ion-icon>&nbsp;Fecha de Nacimiento
+        </ion-button>
+        <ion-label>{{ playerForm.get('birthdate')?.value | date:'dd/MM/yyyy' }}</ion-label>
+      </ion-item>
+
+      <h3 class="subtitle ion-margin-horizontal">Ubicación de registro</h3>
+      <div class="map-container ion-margin">
+        <capacitor-google-map #map class="interactive-map">
+        </capacitor-google-map>
+        <p class="ion-text-center">
+          Lat: {{ playerForm.get('latitude')?.value | number:'1.4-4' }},
+          Long: {{ playerForm.get('longitude')?.value | number:'1.4-4' }}
+        </p>
+        <ion-button expand="block" class="small-centered-button" (click)="resetLocation()">
+          <ion-icon name="locate"></ion-icon>&nbsp;Reset
+        </ion-button>
+      </div>
+      <ion-button expand="block" class="medium-centered-button ion-margin-top" type="submit"
+        [disabled]="playerForm.invalid">
+        Crear Jugador
+      </ion-button>
+    </form>
+  </ion-card>
+
+  <ion-modal #dateModal>
+    <ng-template>
+      <ion-header>
+        <ion-toolbar>
+          <ion-buttons slot="start">
+            <ion-button (click)="resetDate()">Limpiar</ion-button>
+          </ion-buttons>
+          <ion-buttons slot="end">
+            <ion-button (click)="confirmDate()">Confirmar</ion-button>
+          </ion-buttons>
+        </ion-toolbar>
+      </ion-header>
+      <ion-content>
+        <ion-datetime #datetime presentation="date" [value]="playerForm.get('birthdate')?.value">
+        </ion-datetime>
+      </ion-content>
+    </ng-template>
+  </ion-modal>
+
+  <div class="ion-padding"></div>
+</ion-content>

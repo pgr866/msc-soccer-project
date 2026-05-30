@@ -7,6 +7,7 @@ import { ToastService } from '@/app/core/services/toast.service';
 import { AlertService } from '@/app/core/services/alert.service';
 import { GenericHeaderComponent } from '@/app/shared/components/generic-header/generic-header.component';
 import { Router } from '@angular/router';
+import { Player } from '@/app/core/models/player.model';
 
 @Component({
   selector: 'app-import-players',
@@ -20,27 +21,40 @@ export class ImportPlayersPage {
   private alertService = inject(AlertService);
   private router = inject(Router);
 
-  public searchQuery = '';
-  public displayLimit = 20;
+  public searchQuery: string = '';
+  public displayLimit: number = 20;
+  public searchImportResults: Player[] = [];
+  public selectedIds: number[] = [];
 
   search() {
     if (this.searchQuery.length < 3) return;
     this.displayLimit = 20;
     this.playerService.searchExternalPlayers(this.searchQuery).subscribe({
+      next: (results: Player[]) => {
+        this.searchImportResults = results;
+      },
       error: () => this.toastService.showToast('Error en la búsqueda', 'error')
     });
   }
 
+  toggleSelectedId(id: number, isSelected: boolean) {
+    if (isSelected) {
+      this.selectedIds = [...this.selectedIds, id];
+    } else {
+      this.selectedIds = this.selectedIds.filter(i => i !== id);
+    }
+  }
+
   async importSelected() {
-    const count = this.playerService.selectedIds().length;
-    const confirmed = await this.alertService.showConfirmation('Importar jugadores', `¿Estás seguro de que quieres importar ${count} jugador(es) a la base de datos?`);
+    const confirmed = await this.alertService.showConfirmation('Importar jugadores', `¿Estás seguro de que quieres importar ${this.selectedIds.length} jugador(es) a la base de datos?`);
     if (!confirmed) return;
     try {
       const { lat, lng } = await this.deviceService.getCurrentPosition();
-      this.playerService.importPlayers(lat, lng).subscribe({
+      this.playerService.importPlayers(this.selectedIds, lat, lng).subscribe({
         next: () => {
           this.toastService.showToast('Jugadores importados', 'success');
-          this.playerService.clearImportState();
+          this.searchImportResults = [];
+          this.selectedIds = [];
           this.router.navigate(['/players']);
         },
         error: () => this.toastService.showToast('Error al importar', 'error')

@@ -29,4 +29,10 @@ export const routes: Routes = [
     canActivate: [authGuard],
     // data: { role: 'ADMIN' }
   },
+  {
+    path: 'create-player',
+    loadComponent: () =>
+      import('./features/create-player/create-player.page').then((m) => m.CreatePlayerPage),
+    canActivate: [authGuard],
+  },
 ];
