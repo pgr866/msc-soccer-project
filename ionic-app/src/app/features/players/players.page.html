@@ -1,20 +1,4 @@
-<ion-header [translucent]="true">
-  <ion-toolbar>
-    <ion-title>players</ion-title>
-    <ion-buttons slot="end">
-      <ion-item lines="none">
-        <ion-label style="font-size: 0.8rem; margin-right: 8px;">
-          {{ configService.isSpringMode() ? 'Spring' : 'Node' }}
-        </ion-label>
-        <ion-toggle class="my-custom-toggle" [checked]="configService.isSpringMode()" (ionChange)="onToggleChange()">
-        </ion-toggle>
-      </ion-item>
-      <ion-button (click)="logout()">
-        <ion-icon slot="icon-only" name="log-out-outline"></ion-icon>
-      </ion-button>
-    </ion-buttons>
-  </ion-toolbar>
-</ion-header>
+<app-generic-header title="Lista de Jugadores"></app-generic-header>
 <ion-content>
   <ion-list>
     @for (player of playerService.players(); track player.id) {
@@ -28,34 +12,4 @@
     <ion-item>Aún no hay jugadores para mostrar.</ion-item>
     }
   </ion-list>
-  <ion-card>
-    <ion-card-content>
-      <ion-button expand="block" (click)="takePhoto()">
-        <ion-icon slot="start" name="camera"></ion-icon>
-        Take Photo
-      </ion-button>
-      <ion-button expand="block" (click)="obtainLocation()">
-        <ion-icon slot="start" name="location"></ion-icon>
-        Obtain Location
-      </ion-button>
-      @if (playerService.player(); as p) {
-      <div style="text-align: center; margin-bottom: 15px;">
-        <ion-img [src]="p.photo_url" alt="Foto capturada"
-          style="max-width: 100%; height: auto; border-radius: 8px; border: 2px solid var(--ion-color-primary);">
-        </ion-img>
-      </div>
-      <ion-item lines="none">
-        <ion-icon name="location" slot="start"></ion-icon>
-        <ion-label>
-          <h3>Location</h3>
-          <p>Lat: {{ p.latitude || 'N/A' }}</p>
-          <p>Lon: {{ p.longitude || 'N/A' }}</p>
-        </ion-label>
-      </ion-item>
-      } @else {
-      <p>There is no taken photo yet.</p>
-      <p>There is no location data available.</p>
-      }
-    </ion-card-content>
-  </ion-card>
 </ion-content>
