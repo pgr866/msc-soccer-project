@@ -140,9 +140,15 @@ ion-card-title {
   display: flex;
   gap: 8px;
   align-items: center;
-  ion-button {
-    height: 40px;
+  ion-button, ion-item, ion-label, ion-toggle {
+    height: 40px !important;
   }
+}
+
+.bordered-container {
+  --border-color: black;
+  --border-width: 1px;
+  --border-style: solid;
 }
 
 .centered-content {

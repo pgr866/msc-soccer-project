@@ -1,0 +1,24 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>{{ title }}</ion-title>
+    <ion-buttons slot="end" class="buttons ion-padding-end">
+      <ion-item lines="none" class="ion-align-items-start">
+        <ion-label class="ion-text-small ion-margin-end">
+          {{ configService.isSpringMode() ? 'Spring' : 'Node' }}
+        </ion-label>
+        <ion-toggle class="my-custom-toggle" [checked]="configService.isSpringMode()"
+          (ionChange)="onToggleChange()"></ion-toggle>
+      </ion-item>
+      @if (authService.currentUser()) {
+      <ion-button (click)="logout()" fill="solid" color="primary">
+        <ion-icon slot="start" name="log-out-outline"></ion-icon>
+      </ion-button>
+      } @else {
+      <ion-button routerLink="/login" fill="solid" color="primary" class="bordered-container">
+        <ion-icon slot="start" name="log-in-outline"></ion-icon>
+        Iniciar Sesión
+      </ion-button>
+      }
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
