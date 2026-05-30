@@ -3,7 +3,8 @@ import { inject, Injectable, signal, computed, DestroyRef } from '@angular/core'
 import { Subject, switchMap, tap } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Player } from '@/app/core/models/player.model';
-import { PlayerDetail } from '../models/comment.model';
+import { PlayerDetail } from '@/app/core/models/comment.model';
+import { ExternalPlayerDTO } from '@/app/core/models/external-player-dto';
 import { BackendConfigService } from './backend-config.service';
 
 @Injectable({ providedIn: 'root' })
@@ -20,6 +21,12 @@ export class PlayerService {
 
   private _player = signal<PlayerDetail | null>(null);
   public player = this._player.asReadonly();
+
+  private _searchImportResults = signal<ExternalPlayerDTO[]>([]);
+  public searchImportResults = this._searchImportResults.asReadonly();
+
+  private _selectedIds = signal<number[]>([]);
+  public selectedIds = this._selectedIds.asReadonly();
 
   constructor() {
     this.playerRefresh$.pipe(
@@ -58,5 +65,32 @@ export class PlayerService {
         this._player.set(null);
       })
     );
+  }
+
+  searchExternalPlayers(query: string) {
+    return this.http.get<ExternalPlayerDTO[]>(`${this.apiBase()}/players/search`, {
+      params: new HttpParams().set('query', query)
+    }).pipe(
+      tap((results: ExternalPlayerDTO[]) => this._searchImportResults.set(results))
+    );
+  }
+
+  toggleSelectedId(id: number, isSelected: boolean) {
+    this._selectedIds.update((ids: number[]) =>
+      isSelected ? [...ids, id] : ids.filter(i => i !== id)
+    );
+  }
+
+  clearImportState() {
+    this._searchImportResults.set([]);
+    this._selectedIds.set([]);
+  }
+
+  importPlayers(lat: number, lng: number) {
+    return this.http.post<Player[]>(`${this.apiBase()}/players/import`, {
+      playerIds: this._selectedIds(),
+      latitude: lat,
+      longitude: lng
+    });
   }
 }

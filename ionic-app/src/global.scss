@@ -47,8 +47,8 @@
   --ion-color-primary: oklch(0.596 0.145 163.225);
   --ion-toolbar-background: var(--ion-color-primary) !important;
   --ion-color-primary-contrast: oklch(0.979 0.021 166.113);
-  --ion-color-secondary: oklch(0.967 0.001 286.375);
-  --ion-color-secondary-contrast: oklch(12.278% 0.0425 278.132);
+  --ion-color-secondary: oklch(12.278% 0.0425 278.132);
+  --ion-color-secondary-contrast: oklch(0.967 0.001 286.375);
   --ion-color-danger: oklch(43.26% 0.16064 25.42);
   --ion-color-danger-contrast: #ffffff;
   --ion-item-background: oklch(0.967 0.001 286.375);
@@ -66,6 +66,8 @@
     --ion-text-color: oklch(1 0 0);
     --ion-color-primary: oklch(0.38 0.07 168.16);
     --ion-color-primary-contrast: oklch(0.979 0.021 166.113);
+    --ion-color-secondary: oklch(0.967 0.001 286.375);
+    --ion-color-secondary-contrast: oklch(12.278% 0.0425 278.132);
     --ion-item-background: oklch(0.212 0.019 322.12);
     --ion-card-color: oklch(0.89 0 0);
     --ion-card-background: oklch(0.212 0.019 322.12);
@@ -156,8 +158,8 @@ ion-card-title {
   }
 }
 
-.bordered-container {
-  --border-color: black;
+.bordered-primary-contrast {
+  --border-color: var(--ion-color-primary-contrast);
   --border-width: 1px;
   --border-style: solid;
 }
@@ -185,7 +187,7 @@ ion-card-title {
 }
 
 .medium-centered-button {
-  width: 400px;
+  width: 300px;
   margin: 20px auto 0;
 }
 
@@ -212,6 +214,10 @@ ion-card-title {
 
 .font-size-1 {
   font-size: 1rem !important;
+}
+
+.font-size-1-25 {
+  font-size: 1.25rem !important;
 }
 
 .font-size-20px {
@@ -299,12 +305,6 @@ ion-modal {
 
 .sc-ion-searchbar-md-h {
   --background: var(--ion-item-background);
-}
-
-.centered-content {
-  max-width: 1000px;
-  margin: 0 auto !important;
-  width: 100%;
 }
 
 .movie-poster-container {

@@ -1,7 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { IonTabs, IonTabBar, IonTabButton, IonIcon, IonLabel } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import { peopleOutline, calendarOutline, pricetagsOutline } from 'ionicons/icons';
+import { newspaperOutline, peopleOutline, trophyOutline } from 'ionicons/icons';
 import { AuthService } from '@/app/core/services/auth.service';
 
 @Component({
@@ -14,6 +14,6 @@ export class TabsPage {
   public authService = inject(AuthService);
 
   constructor() {
-    addIcons({ peopleOutline, calendarOutline, pricetagsOutline });
+    addIcons({ newspaperOutline, peopleOutline, trophyOutline });
   }
 }

@@ -33,8 +33,8 @@ export const searchPlayers = async (query: string | null) => {
         return {
             id: p.id,
             name: p.name,
-            first_name: p.firstname || null,
-            last_name: p.lastname || null,
+            firstName: p.firstname || null,
+            lastName: p.lastname || null,
             age: p.age ?? null,
             birthdate: parseExternalDate(p.birth?.date),
             nationality: p.nationality || null,
@@ -42,7 +42,7 @@ export const searchPlayers = async (query: string | null) => {
             weight,
             number: p.number ?? null,
             position: p.position || null,
-            photo_url: p.photo || null
+            photoUrl: p.photo || null
         };
     });
 };

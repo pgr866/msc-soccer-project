@@ -13,29 +13,33 @@
         @if (authService.currentUser()?.role === 'ADMIN') {
         <div class="ion-display-flex">
           <ion-button class="ion-margin-end" fill="solid" [routerLink]="['/create-news', player.player.id]">
-            <ion-icon name="newspaper"></ion-icon>
+            <ion-icon class="ion-margin-end" name="newspaper"></ion-icon>Crear Noticia
           </ion-button>
           <ion-button class="ion-margin-end" fill="solid" color="warning"
             [routerLink]="['/edit-player', player.player.id]">
-            <ion-icon name="create"></ion-icon>
+            <ion-icon class="ion-margin-end" name="create"></ion-icon>Editar
           </ion-button>
           <ion-button fill="solid" color="danger" (click)="deletePlayer()">
-            <ion-icon name="trash"></ion-icon>
+            <ion-icon class="ion-margin-end" name="trash"></ion-icon>Eliminar
           </ion-button>
         </div>
         }
       </div>
-      <ion-card-subtitle class="font-size-1">{{ player.player.team }} | {{ player.player.league }} | #{{
-        player.player.number
-        }}</ion-card-subtitle>
     </ion-card-header>
 
     <ion-card-content>
-      <h3 class="subtitle">Información Personal</h3>
+      <h3 class="subtitle">Información Técnica</h3>
       <ion-list lines="full">
-        <ion-item><ion-label><strong>Nombre:</strong> {{ player.player.firstName }} {{ player.player.lastName
-            }}</ion-label></ion-item>
         <ion-item><ion-label><strong>Posición:</strong> {{ player.player.position }}</ion-label></ion-item>
+        <ion-item><ion-label><strong>Dorsal:</strong> {{ player.player.number }}</ion-label></ion-item>
+        <ion-item><ion-label><strong>Equipo:</strong> {{ player.player.team }}</ion-label></ion-item>
+        <ion-item><ion-label><strong>Liga:</strong> {{ player.player.league }}</ion-label></ion-item>
+      </ion-list>
+
+      <h3 class="subtitle ion-padding-top">Información Personal</h3>
+      <ion-list lines="full">
+        <ion-item><ion-label><strong>Nombre Completo:</strong> {{ player.player.firstName }} {{ player.player.lastName
+            }}</ion-label></ion-item>
         <ion-item><ion-label><strong>Edad:</strong> {{ player.player.age }} años</ion-label></ion-item>
         <ion-item><ion-label><strong>Fecha Nacimiento:</strong> {{ player.player.birthdate | date:'dd/MM/yyyy'
             }}</ion-label></ion-item>
@@ -79,9 +83,8 @@
             <div class="ion-display-flex ion-justify-content-between ion-align-items-center">
               <div class="ion-display-flex ion-align-items-center">
                 <h3>{{ comment.author }}</h3>
-                <span class="font-size-small ion-padding-start" style="color: var(--ion-color-medium);">
-                  ({{ comment.latitude | number:'1.2-6' }}, {{ comment.longitude | number:'1.2-6' }})
-                </span>
+                <ion-note class="ion-padding-horizontal" slot="end" color="medium">{{ comment.createdAt | date:'dd/MM/yy HH:mm' }}</ion-note>
+                <ion-note class="ion-padding-start" slot="end" color="medium">({{ comment.latitude | number:'1.2-6' }}, {{ comment.longitude | number:'1.2-6' }})</ion-note>                
               </div>
 
               <div>
@@ -109,6 +112,7 @@
         </ion-item>
         }
       </ion-list>
+      <div class="ion-padding-bottom"></div>
     </ion-card-content>
   </ion-card>
   } @else {

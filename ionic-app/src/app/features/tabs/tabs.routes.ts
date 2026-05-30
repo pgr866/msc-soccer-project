@@ -11,6 +11,7 @@ export const routes: Routes = [
       //   path: 'news',
       //   loadComponent: () =>
       //     import('../news/news.page').then((m) => m.NewsPage),
+      //   canActivate: [authGuard],
       // },
       {
         path: 'players',
@@ -21,6 +22,7 @@ export const routes: Routes = [
       //   path: 'dream-team',
       //   loadComponent: () =>
       //     import('../dream-team/dream-team.page').then((m) => m.DreamTeamPage),
+      //   canActivate: [authGuard],
       // },
     ],
   },
