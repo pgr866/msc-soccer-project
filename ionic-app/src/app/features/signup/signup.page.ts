@@ -1,8 +1,9 @@
 import { Component, effect, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormGroup, FormControl, Validators, AbstractControl } from '@angular/forms';
-import { IonicModule, ToastController, LoadingController } from '@ionic/angular';
+import { IonicModule, LoadingController } from '@ionic/angular';
 import { AuthService } from '@/app/core/services/auth.service';
+import { ToastService } from '@/app/core/services/toast.service';
 import { Router, RouterLink } from '@angular/router';
 
 @Component({
@@ -13,7 +14,7 @@ import { Router, RouterLink } from '@angular/router';
 })
 export class SignupPage {
   private authService = inject(AuthService);
-  private toastController = inject(ToastController);
+  private toastService = inject(ToastService);
   private loadingController = inject(LoadingController);
   private router = inject(Router);
 
@@ -30,12 +31,15 @@ export class SignupPage {
   }
 
   passwordMatchValidator(control: AbstractControl) {
-    return control.get('password')?.value === control.get('repeat_password')?.value 
+    return control.get('password')?.value === control.get('repeat_password')?.value
       ? null : { mismatch: true };
   }
 
   async signup() {
-    if (this.signupForm.invalid) return;
+    if (this.signupForm.invalid) {
+      this.toastService.showToast('Por favor, revisa que los datos sean correctos y las contraseñas coincidan.', 'error');
+      return;
+    }
     const loading = await this.loadingController.create({
       message: 'Creando cuenta...',
       spinner: 'crescent'
@@ -44,26 +48,11 @@ export class SignupPage {
     const { email, password, repeat_password } = this.signupForm.value;
     try {
       await this.authService.signup(email!, password!, repeat_password!);
-      this.showInfoMessage('Cuenta creada con éxito.');
-      this.router.navigate(["/players"]);
+      this.toastService.showToast('Cuenta creada con éxito.', 'success');
     } catch (error: any) {
-      this.showErrorMessage(error.message);
+      this.toastService.showToast('Error: ' + error.message, 'error');
     } finally {
-      loading.dismiss();
+      await loading.dismiss();
     }
-  }
-
-  async showErrorMessage(message: string) {
-    const toast = await this.toastController.create({
-      message, duration: 3000, color: 'danger'
-    });
-    toast.present();
-  }
-
-  async showInfoMessage(message: string) {
-    const toast = await this.toastController.create({
-      message, duration: 2000, color: 'success'
-    });
-    toast.present();
   }
 }

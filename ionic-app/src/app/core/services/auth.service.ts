@@ -55,6 +55,8 @@ export class AuthService {
       let customMessage = 'Ha ocurrido un error inesperado';
       switch (error.code) {
         case 'auth/invalid-credential':
+        case 'auth/wrong-password':
+        case 'auth/user-not-found':
           customMessage = 'El usuario no existe o la contraseña es incorrecta.';
           break;
         case 'auth/too-many-requests':

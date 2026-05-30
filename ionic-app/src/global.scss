@@ -136,6 +136,13 @@ ion-card-title {
   }
 }
 
+.shadow-box {
+  border-radius: 12px;
+  box-shadow: 0 10px 10px rgba(0, 0, 0, 0.2);
+  margin: 16px auto;
+  --padding-start: 10px;
+}
+
 .buttons {
   display: flex;
   gap: 8px;
@@ -191,7 +198,6 @@ ion-card-title {
 
 .subtitle {
   border-bottom: 1px solid;
-  padding-top: 25px;
   padding-bottom: 5px;
 }
 
@@ -306,10 +312,4 @@ ion-modal {
 
 .font-size-1 {
   font-size: 1rem !important;
-}
-
-.subtitle {
-  border-bottom: 1px solid;
-  padding-top: 25px;
-  padding-bottom: 5px;
 }
