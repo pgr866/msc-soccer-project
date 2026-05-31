@@ -24,11 +24,11 @@ export const routes: Routes = [
           import('../dream-teams/dream-teams.page').then((m) => m.DreamTeamsPage),
         canActivate: [authGuard],
       },
+      {
+        path: '',
+        redirectTo: '/players',
+        pathMatch: 'full',
+      },
     ],
-  },
-  {
-    path: '',
-    redirectTo: '/players',
-    pathMatch: 'full',
   },
 ];

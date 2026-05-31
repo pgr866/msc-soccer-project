@@ -13,7 +13,7 @@ public class News {
 	private String titulo; // 5 a 30 caracteres sin contar espacios
 	private String descripcion; // 20 a 250 caracteres sin contar espacios
 	private String fecha; // Formato dd/mm/aaaa
-	private String jugador; // Nombre del jugador relacionado con la noticia
+	private String jugador; // 1 a 100 caracteres sin contar espacios
 	private List<String> etiquetas; // Secuencia de 1 a 6 etiquetas (#tag)
 
 	/** Constructor por defecto: inicializa fecha actual y valores vacios */

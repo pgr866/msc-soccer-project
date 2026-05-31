@@ -1,0 +1,45 @@
+<app-generic-header [title]="'Añadir noticia relacionada con ' + playerName" backRoute="/players"></app-generic-header>
+
+<ion-content>
+  <div class="centered-content">
+    <form [formGroup]="newsForm">
+      <ion-card class="ion-margin-vertical">
+        <ion-card-header>
+          <ion-card-title class="ion-margin-start">Añadir nueva noticia</ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <ion-item lines="none">
+            <ion-label position="stacked">Título:</ion-label>
+            <ion-input formControlName="title" placeholder="5-30 caracteres"></ion-input>
+          </ion-item>
+
+          <ion-item lines="none">
+            <ion-label position="stacked">Descripción:</ion-label>
+            <ion-textarea formControlName="description" placeholder="20-250 caracteres"></ion-textarea>
+          </ion-item>
+
+          <ion-item lines="none">
+            <ion-label position="stacked">Etiquetas:</ion-label>
+            <ion-input formControlName="labels" placeholder="#tag1 #tag2 (Máx 6)"></ion-input>
+          </ion-item>
+
+          <ion-button class="medium-centered-button" expand="block" (click)="publish()">Publicar noticia</ion-button>
+        </ion-card-content>
+      </ion-card>
+
+      <ion-card>
+        <ion-card-header>
+          <ion-card-title class="ion-margin-start">Establecer limite noticias</ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <ion-item lines="none">
+            <ion-label position="stacked">Limite de noticias:</ion-label>
+            <ion-input type="number" formControlName="limit"
+            oninput="if(this.value<1)this.value='';this.dispatchEvent(new CustomEvent('ionInput',{bubbles:true,detail:{value:this.value}}))"></ion-input>
+          </ion-item>
+          <ion-button class="medium-centered-button" expand="block" color="medium" (click)="updateLimit()">Limitar</ion-button>
+        </ion-card-content>
+      </ion-card>
+    </form>
+  </div>
+</ion-content>

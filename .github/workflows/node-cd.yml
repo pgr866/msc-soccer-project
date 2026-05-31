@@ -57,6 +57,7 @@ jobs:
           env_vars: |
             FIREBASE_SERVICE_ACCOUNT_B64=${{ steps.encode_key.outputs.FIREBASE_SERVICE_ACCOUNT_B64 }}
             IONIC_APP_URL=https://ionic-app-${{ env.GCP_PROJECT_NUMBER }}.${{ env.REGION }}.run.app
+            CORBA_APP_URL=https://corba-app-${{ env.GCP_PROJECT_NUMBER }}.${{ env.REGION }}.run.app
             MDB_DB_USER=${{ secrets.MDB_DB_USER }}
             MDB_DB_PASSWORD=${{ secrets.MDB_DB_PASSWORD }}
             MDB_DB_HOST=${{ env.MDB_DB_HOST }}

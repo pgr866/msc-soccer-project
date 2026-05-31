@@ -2,6 +2,7 @@ import express from 'express';
 import * as ctrlPlayers from '../controllers/players.js';
 import * as ctrlComments from '../controllers/comments.js';
 import * as ctrlDreamTeams from '../controllers/dreamTeams.js';
+import * as corbaController from '../controllers/corba.js';
 import { authenticate, optionalAuthenticate } from '../middlewares/auth.middleware.js';
 import { authorizeRole } from '../middlewares/role.middleware.js';
 
@@ -23,5 +24,10 @@ router.delete('/comments/:id', authenticate, authorizeRole('ADMIN'), ctrlComment
 
 router.get('/dream-teams', authenticate, ctrlDreamTeams.getAllDreamTeams);
 router.post('/dream-teams', authenticate, ctrlDreamTeams.createDreamTeamWithAI);
+
+router.post('/corba/send', corbaController.sendNews);
+router.post('/corba/read', corbaController.readNews);
+router.post('/corba/receive', corbaController.receiveNews);
+router.post('/corba/limit', corbaController.setLimit);
 
 export default router;

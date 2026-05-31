@@ -147,8 +147,8 @@ public class ExternalPlayerService {
         BigDecimal lon = BigDecimal.valueOf(longitude);
         Player player = new Player();
         player.setName(ep.name());
-        player.setFirstName(ep.first_name());
-        player.setLastName(ep.last_name());
+        player.setFirstName(ep.firstName());
+        player.setLastName(ep.lastName());
         player.setAge(age);
         player.setBirthdate(ep.birthdate());
         player.setNationality(ep.nationality());
@@ -156,7 +156,7 @@ public class ExternalPlayerService {
         player.setWeight(w);
         player.setNumber(number);
         player.setPosition(ep.position());
-        player.setPhotoUrl(ep.photo_url());
+        player.setPhotoUrl(ep.photoUrl());
         player.setTeam(teamName);
         player.setLeague(leagueName);
         player.setLatitude(lat);

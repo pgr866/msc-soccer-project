@@ -30,7 +30,7 @@
             <ion-item class="ion-margin-bottom">
               <ion-label position="stacked">Dorsal</ion-label>
               <ion-input type="number" formControlName="number"
-                oninput="if(this.value>99)this.value=99;if(this.value<1)this.value=1;this.dispatchEvent(new CustomEvent('ionInput',{bubbles:true,detail:{value:this.value}}))" placeholder="9"></ion-input>
+                oninput="if(this.value>99)this.value=99;if(this.value<1)this.value='';this.dispatchEvent(new CustomEvent('ionInput',{bubbles:true,detail:{value:this.value}}))" placeholder="9"></ion-input>
             </ion-item>
           </ion-col>
         </ion-row>
@@ -79,7 +79,7 @@
             <ion-item class="ion-margin-bottom">
               <ion-label position="stacked">Edad</ion-label>
               <ion-input type="number" formControlName="age"
-                oninput="if(this.value>120)this.value=120;if(parseFloat(this.value)<0)this.value=0;this.dispatchEvent(new CustomEvent('ionInput',{bubbles:true,detail:{value:this.value}}))"
+                oninput="if(this.value>120)this.value=120;if(parseFloat(this.value)<'')this.value=0;this.dispatchEvent(new CustomEvent('ionInput',{bubbles:true,detail:{value:this.value}}))"
                 placeholder="25"></ion-input>
             </ion-item>
           </ion-col>
@@ -95,7 +95,7 @@
             <ion-item>
               <ion-label position="stacked">Altura (m)</ion-label>
               <ion-input type="number" formControlName="height" step="0.01"
-                oninput="if(parseFloat(this.value)>3)this.value=3;if(parseFloat(this.value)<0)this.value=0;this.dispatchEvent(new CustomEvent('ionInput',{bubbles:true,detail:{value:this.value}}))"
+                oninput="if(parseFloat(this.value)>3)this.value=3;if(parseFloat(this.value)<'')this.value=0;this.dispatchEvent(new CustomEvent('ionInput',{bubbles:true,detail:{value:this.value}}))"
                 placeholder="1.78"></ion-input>
             </ion-item>
           </ion-col>
@@ -103,7 +103,7 @@
             <ion-item>
               <ion-label position="stacked">Peso (kg)</ion-label>
               <ion-input type="number" formControlName="weight" step="0.01"
-                oninput="if(parseFloat(this.value)>300)this.value=300;if(parseFloat(this.value)<0)this.value=0;this.dispatchEvent(new CustomEvent('ionInput',{bubbles:true,detail:{value:this.value}}))"
+                oninput="if(parseFloat(this.value)>300)this.value=300;if(parseFloat(this.value)<'')this.value=0;this.dispatchEvent(new CustomEvent('ionInput',{bubbles:true,detail:{value:this.value}}))"
                 placeholder="75"></ion-input>
             </ion-item>
           </ion-col>
