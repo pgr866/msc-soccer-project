@@ -1,0 +1,41 @@
+<app-generic-header title="Consumidor de Noticias" [favIcon]="true"></app-generic-header>
+
+<ion-content class="ion-padding">
+  <div class="container-wrapper">
+    @if (currentNews) {
+    <ion-card class="news-card-featured">
+      <ion-card-header>
+        <ion-card-title class="news-title-xl ion-text-center">
+          {{ currentNews.title }}
+        </ion-card-title>
+      </ion-card-header>
+
+      <ion-card-content>
+        <ion-item lines="none">
+          <ion-label class="ion-text-center ion-margin-vertical">
+            <p class="font-size-1"><strong>Fecha:</strong> {{ currentNews.date }} | 
+               <strong>Etiquetas:</strong> {{ currentNews.labels }} | 
+               <strong>Jugador:</strong> {{ currentNews.player }}</p>
+          </ion-label>
+        </ion-item>
+
+        <ion-item lines="none" class="ion-margin-vertical ion-padding-vertical">
+          <ion-text>
+            <p class="font-size-1-25">{{ currentNews.description }}</p>
+          </ion-text>
+        </ion-item>
+
+        <ion-button expand="block" class="medium-centered-button" (click)="consumeNews()">
+          <ion-icon class="ion-margin-end" name="cloud-download-outline"></ion-icon>Consumir Noticia
+        </ion-button>
+      </ion-card-content>
+    </ion-card>
+    } @else {
+    <ion-card>
+      <ion-card-content class="news-empty-state ion-text-center">
+        <p>No hay noticias pendientes en el buffer.</p>
+      </ion-card-content>
+    </ion-card>
+    }
+  </div>
+</ion-content>

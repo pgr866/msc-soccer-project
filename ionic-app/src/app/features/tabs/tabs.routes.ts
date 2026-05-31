@@ -7,12 +7,12 @@ export const routes: Routes = [
     path: '',
     component: TabsPage,
     children: [
-      // {
-      //   path: 'news',
-      //   loadComponent: () =>
-      //     import('../news/news.page').then((m) => m.NewsPage),
-      //   canActivate: [authGuard],
-      // },
+      {
+        path: 'news',
+        loadComponent: () =>
+          import('../news/news.page').then((m) => m.NewsPage),
+        canActivate: [authGuard],
+      },
       {
         path: 'players',
         loadComponent: () =>

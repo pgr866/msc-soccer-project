@@ -25,9 +25,9 @@ router.delete('/comments/:id', authenticate, authorizeRole('ADMIN'), ctrlComment
 router.get('/dream-teams', authenticate, ctrlDreamTeams.getAllDreamTeams);
 router.post('/dream-teams', authenticate, ctrlDreamTeams.createDreamTeamWithAI);
 
-router.post('/corba/send', corbaController.sendNews);
-router.post('/corba/read', corbaController.readNews);
-router.post('/corba/receive', corbaController.receiveNews);
-router.post('/corba/limit', corbaController.setLimit);
+router.post('/corba/send', authenticate, authorizeRole('ADMIN'), corbaController.sendNews);
+router.post('/corba/read', authenticate, corbaController.readNews);
+router.post('/corba/receive', authenticate, corbaController.receiveNews);
+router.post('/corba/limit', authenticate, authorizeRole('ADMIN'), corbaController.setLimit);
 
 export default router;
