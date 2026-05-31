@@ -137,6 +137,34 @@ public class RouteConfig {
                 .filters(f -> f.filter(new JwtAuthenticationFilter("USER,ADMIN"))
                             .rewritePath("/dream-team-service/(?<remaining>.*)", "/${remaining}"))
                 .uri(dreamTeamUri))
+            
+            // POST /api/corba/send (Admin)
+            .route("send-news", r -> r.path("/corba-service/api/corba/send")
+                .and().method("POST")
+                .filters(f -> f.filter(new JwtAuthenticationFilter("ADMIN"))
+                        .rewritePath("/corba-service/(?<remaining>.*)", "/${remaining}"))
+                .uri(playerUri))
+
+            // POST /api/corba/read (Authenticated/Admin)
+            .route("read-news", r -> r.path("/corba-service/api/corba/read")
+                .and().method("POST")
+                .filters(f -> f.filter(new JwtAuthenticationFilter("USER,ADMIN"))
+                        .rewritePath("/corba-service/(?<remaining>.*)", "/${remaining}"))
+                .uri(playerUri))
+
+            // POST /api/corba/receive (Authenticated/Admin)
+            .route("receive-news", r -> r.path("/corba-service/api/corba/receive")
+                .and().method("POST")
+                .filters(f -> f.filter(new JwtAuthenticationFilter("USER,ADMIN"))
+                        .rewritePath("/corba-service/(?<remaining>.*)", "/${remaining}"))
+                .uri(playerUri))
+
+            // POST /api/corba/limit (Admin)
+            .route("set-limit", r -> r.path("/corba-service/api/corba/limit")
+                .and().method("POST")
+                .filters(f -> f.filter(new JwtAuthenticationFilter("ADMIN"))
+                        .rewritePath("/corba-service/(?<remaining>.*)", "/${remaining}"))
+                .uri(playerUri))
 
             .build();
     }

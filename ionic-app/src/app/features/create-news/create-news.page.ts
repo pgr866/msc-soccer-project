@@ -1,6 +1,8 @@
 import { Component, inject, Input } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-import { IonContent, IonCard, IonCardHeader, IonCardTitle, IonCardContent, IonItem, IonLabel, IonInput, IonTextarea, IonButton } from '@ionic/angular/standalone';
+import { IonContent, IonCard, IonCardHeader, IonCardTitle, IonCardContent, IonItem, IonLabel, IonIcon, IonInput, IonTextarea, IonButton } from '@ionic/angular/standalone';
+import { addIcons } from 'ionicons';
+import { newspaper, speedometer } from 'ionicons/icons';
 import { GenericHeaderComponent } from '@/app/shared/components/generic-header/generic-header.component';
 import { NewsService } from '@/app/core/services/news.service';
 import { ToastService } from '@/app/core/services/toast.service';
@@ -11,7 +13,7 @@ import { ToastService } from '@/app/core/services/toast.service';
   standalone: true,
   imports: [
     ReactiveFormsModule, IonContent, IonCard, IonCardHeader, IonCardTitle,
-    IonCardContent, IonItem, IonLabel, IonInput, IonTextarea, IonButton, GenericHeaderComponent
+    IonCardContent, IonItem, IonLabel, IonIcon, IonInput, IonTextarea, IonButton, GenericHeaderComponent
   ]
 })
 export class CreateNewsPage {
@@ -26,6 +28,10 @@ export class CreateNewsPage {
     labels: ['', Validators.required],
     limit: [5]
   });
+
+  constructor() {
+    addIcons({ newspaper, speedometer });
+  }
 
   publish() {
     if (this.newsForm.invalid) {
