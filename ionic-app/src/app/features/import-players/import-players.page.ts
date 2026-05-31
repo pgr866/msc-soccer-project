@@ -1,12 +1,11 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IonContent, IonSearchbar, IonList, IonItem, IonCheckbox, IonAvatar, IonLabel, IonButton } from '@ionic/angular/standalone';
+import { IonContent, IonSearchbar, IonList, IonItem, IonCheckbox, IonAvatar, IonLabel, IonButton, NavController } from '@ionic/angular/standalone';
 import { PlayerService } from '@/app/core/services/player.service';
 import { DeviceService } from '@/app/core/services/device.service';
 import { ToastService } from '@/app/core/services/toast.service';
 import { AlertService } from '@/app/core/services/alert.service';
 import { GenericHeaderComponent } from '@/app/shared/components/generic-header/generic-header.component';
-import { Router } from '@angular/router';
 import { Player } from '@/app/core/models/player.model';
 
 @Component({
@@ -19,7 +18,7 @@ export class ImportPlayersPage {
   private deviceService = inject(DeviceService);
   private toastService = inject(ToastService);
   private alertService = inject(AlertService);
-  private router = inject(Router);
+  private navCtrl = inject(NavController);
 
   public searchQuery: string = '';
   public displayLimit: number = 20;
@@ -55,7 +54,7 @@ export class ImportPlayersPage {
           this.toastService.showToast('Jugadores importados', 'success');
           this.searchImportResults = [];
           this.selectedIds = [];
-          this.router.navigate(['/players']);
+          this.navCtrl.back();
         },
         error: () => this.toastService.showToast('Error al importar', 'error')
       });

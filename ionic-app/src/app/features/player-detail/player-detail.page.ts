@@ -1,11 +1,11 @@
 import { Component, inject, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { RouterLink } from '@angular/router';
 import {
   IonContent, IonButton, IonTextarea, IonList, IonItem, IonLabel,
   IonCard, IonCardHeader, IonCardTitle,
-  IonCardContent, IonIcon, IonSpinner, IonNote
+  IonCardContent, IonIcon, IonSpinner, IonNote, NavController
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import { trash, create, newspaper, send, star, starOutline } from 'ionicons/icons';
@@ -28,7 +28,7 @@ import { AlertService } from '@/app/core/services/alert.service';
   ],
 })
 export class PlayerDetailPage implements OnInit {
-  private router = inject(Router);
+  private navCtrl = inject(NavController);
   private playerService = inject(PlayerService);
   private commentService = inject(CommentService);
   public authService = inject(AuthService);
@@ -67,7 +67,7 @@ export class PlayerDetailPage implements OnInit {
       this.playerService.deletePlayer(this.playerId).subscribe({
         next: () => {
           this.toastService.showToast('Jugador eliminado correctamente', 'success');
-          this.router.navigate(['/players']);
+          this.navCtrl.back();
         },
         error: () => this.toastService.showToast('Error al eliminar el jugador', 'error')
       });

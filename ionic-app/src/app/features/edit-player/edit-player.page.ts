@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, ViewChild, ElementRef, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { Component, inject, Input, OnInit, ViewChild, ElementRef, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import {
@@ -13,10 +13,11 @@ import { addIcons } from 'ionicons';
 import { camera, locate, calendar } from 'ionicons/icons';
 import { PlayerService } from '@/app/core/services/player.service';
 import { AlertService } from '@/app/core/services/alert.service';
+import { PlayerDetail } from '@/app/core/models/comment.model';
 
 @Component({
-  selector: 'app-create-player',
-  templateUrl: './create-player.page.html',
+  selector: 'app-edit-player',
+  templateUrl: './edit-player.page.html',
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   imports: [
     CommonModule, ReactiveFormsModule, IonContent, IonItem, IonLabel,
@@ -24,7 +25,8 @@ import { AlertService } from '@/app/core/services/alert.service';
     IonGrid, IonRow, IonCol, IonCard, GenericHeaderComponent
   ]
 })
-export class CreatePlayerPage implements OnInit {
+export class EditPlayerPage implements OnInit {
+  @Input() playerId!: string;
   private fb = inject(FormBuilder);
   private playerService = inject(PlayerService);
   private alertService = inject(AlertService);
@@ -40,7 +42,7 @@ export class CreatePlayerPage implements OnInit {
     nationality: [''],
     height: [null],
     weight: [null],
-    number: [null, [Validators.min(1), Validators.max(99)]],
+    number: [null],
     team: [''],
     league: [''],
     position: [''],
@@ -57,23 +59,26 @@ export class CreatePlayerPage implements OnInit {
 
   constructor() { addIcons({ camera, locate, calendar }); }
 
-  ngOnInit() {
-    this.resetLocation();
-    setTimeout(async () => {
-      await this.createMap();
-    }, 500);
+  async ngOnInit() {
+    this.playerService.getPlayerDetail(this.playerId).subscribe((playerDetail: PlayerDetail) => {
+      if (playerDetail) {
+        this.playerForm.patchValue(playerDetail.player);
+        setTimeout(async () => {
+          await this.createMap(playerDetail.player.latitude, playerDetail.player.longitude);
+        }, 500);
+      }
+    });
   }
 
-  async createMap() {
+  async createMap(lat: number, lng: number) {
     if (!this.mapRef || !this.mapRef.nativeElement) return;
-    const { latitude, longitude } = this.playerForm.value;
     this.newMap = await GoogleMap.create({
-      id: 'my-map',
+      id: 'edit-map',
       element: this.mapRef.nativeElement,
       apiKey: 'AIzaSyAox2bEMtyviZG9-naimV5hrGFV3iCCdJU',
-      config: { center: { lat: latitude, lng: longitude }, zoom: 10 }
+      config: { center: { lat, lng }, zoom: 10 }
     });
-    await this.addOrUpdateMarker(latitude, longitude);
+    await this.addOrUpdateMarker(lat, lng);
     await this.newMap.setOnMarkerDragStartListener(() => {
     });
     await this.newMap.setOnMarkerDragEndListener(async (event: any) => {
@@ -125,34 +130,16 @@ export class CreatePlayerPage implements OnInit {
     this.dateModal.dismiss();
   }
 
-  async createPlayer() {
+  async updatePlayer() {
     if (this.playerForm.invalid) return;
-    const confirmed = await this.alertService.showConfirmation('Crear jugador', `¿Estás seguro de que quieres registrar a ${this.playerForm.value.name}?`);
+    const confirmed = await this.alertService.showConfirmation('Editar jugador', `¿Estás seguro de que quieres editar a ${this.playerForm.value.name}?`);
     if (!confirmed) return;
-    this.playerService.createPlayer(this.playerForm.value).subscribe({
+    this.playerService.updatePlayer(this.playerId, this.playerForm.value).subscribe({
       next: () => {
-        this.playerForm.reset({
-          name: '',
-          firstName: '',
-          lastName: '',
-          age: null,
-          birthdate: '',
-          nationality: '',
-          height: null,
-          weight: null,
-          number: null,
-          team: '',
-          league: '',
-          position: '',
-          photoUrl: '',
-          latitude: 0,
-          longitude: 0
-        });
-        this.resetLocation();
-        this.toastService.showToast('Jugador creado correctamente', 'success');
+        this.toastService.showToast('Jugador actualizado correctamente', 'success');
         this.navCtrl.back();
       },
-      error: () => this.toastService.showToast('Error al crear el jugador', 'error')
+      error: () => this.toastService.showToast('Error al actualizar', 'error')
     });
   }
 }
