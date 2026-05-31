@@ -13,7 +13,7 @@ public class News {
 	private String titulo; // 5 a 30 caracteres sin contar espacios
 	private String descripcion; // 20 a 250 caracteres sin contar espacios
 	private String fecha; // Formato dd/mm/aaaa
-	private Interest interes; // alto, medio, bajo
+	private String jugador; // Nombre del jugador relacionado con la noticia
 	private List<String> etiquetas; // Secuencia de 1 a 6 etiquetas (#tag)
 
 	/** Constructor por defecto: inicializa fecha actual y valores vacios */
@@ -21,16 +21,16 @@ public class News {
 		this.fecha = LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
 		this.titulo = "Noticia";
 		this.descripcion = "Descripcion de la Noticia";
-		this.interes = Interest.medio;
+		this.jugador = "Nombre del Jugador";
 		this.etiquetas = new ArrayList<>(Arrays.asList("#tag"));
 	}
 
 	/** Constructor completo para inicializacion con todos los campos */
-	public News(String fecha, String titulo, String descripcion, Interest interes, List<String> etiquetas) {
+	public News(String fecha, String titulo, String descripcion, String jugador, List<String> etiquetas) {
 		this.fecha = fecha;
 		this.titulo = titulo;
 		this.descripcion = descripcion;
-		this.interes = interes;
+		this.jugador = jugador;
 		this.etiquetas = etiquetas;
 	}
 
@@ -38,11 +38,11 @@ public class News {
 	 * Constructor para el Servlet: procesa etiquetas desde una cadena separada por
 	 * espacios
 	 */
-	public News(String titulo, String descripcion, Interest interes, String etiquetas) {
+	public News(String titulo, String descripcion, String jugador, String etiquetas) {
 		this.fecha = LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
 		this.titulo = titulo;
 		this.descripcion = descripcion;
-		this.interes = interes;
+		this.jugador = jugador;
 		this.etiquetas = new ArrayList<>(Arrays.asList(etiquetas.trim().split("\\s+")));
 	}
 
@@ -76,14 +76,14 @@ public class News {
 		this.descripcion = descripcion;
 	}
 
-	/** Obtiene el nivel de interes (prioridad) */
-	public Interest getInteres() {
-		return interes;
+	/** Obtiene el nombre del jugador relacionado con la noticia */
+	public String getJugador() {
+		return jugador;
 	}
 
-	/** Establece el nivel de interes */
-	public void setInteres(Interest interes) {
-		this.interes = interes;
+	/** Establece el nombre del jugador relacionado con la noticia */
+	public void setJugador(String jugador) {
+		this.jugador = jugador;
 	}
 
 	/** Obtiene la lista de etiquetas como coleccion */
@@ -109,7 +109,7 @@ public class News {
 	/** Genera una representacion textual de la noticia para depuracion */
 	@Override
 	public String toString() {
-		return "News [" + "fecha=" + fecha + ", titulo=" + titulo + ", descripcion=" + descripcion + ", interes="
-				+ interes + ", etiquetas=" + etiquetas + "]";
+		return "News [" + "fecha=" + fecha + ", titulo=" + titulo + ", descripcion=" + descripcion + ", jugador="
+				+ jugador + ", etiquetas=" + etiquetas + "]";
 	}
 }

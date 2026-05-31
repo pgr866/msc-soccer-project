@@ -3,7 +3,6 @@ package ual.dwsc.test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import ual.dwsc.core.Interest;
 import ual.dwsc.core.News;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -27,25 +26,25 @@ public class NewsTest {
 		assertEquals(hoy, news.getFecha());
 		assertEquals("Noticia", news.getTitulo());
 		assertEquals("Descripcion de la Noticia", news.getDescripcion());
-		assertEquals(Interest.medio, news.getInteres());
+		assertEquals("Nombre del Jugador", news.getJugador());
 		assertTrue(news.getEtiquetas().contains("#tag"));
 	}
 
 	@Test
 	public void testConstructorCompleto() {
 		List<String> tags = Arrays.asList("#java", "#corba");
-		news = new News("01/01/2026", "Titulo Test", "Descripcion de mas de veinte caracteres", Interest.alto, tags);
+		news = new News("01/01/2026", "Titulo Test", "Descripcion de mas de veinte caracteres", "Nombre del Jugador", tags);
 
 		assertEquals("01/01/2026", news.getFecha());
 		assertEquals("Titulo Test", news.getTitulo());
-		assertEquals(Interest.alto, news.getInteres());
+		assertEquals("Nombre del Jugador", news.getJugador());
 		assertEquals(2, news.getEtiquetas().size());
 	}
 
 	@Test
 	public void testConstructorServletYEtiquetas() {
 		// Probamos el constructor que recibe String de etiquetas con espacios extra
-		news = new News("Titulo", "Descripcion...", Interest.bajo, "  #tag1   #tag2  #tag3  ");
+		news = new News("Titulo", "Descripcion...", "Nombre del Jugador", "  #tag1   #tag2  #tag3  ");
 
 		assertEquals(hoy, news.getFecha());
 		assertEquals(3, news.getEtiquetas().size());
@@ -65,8 +64,8 @@ public class NewsTest {
 		news.setDescripcion("Nueva Descripcion Larga");
 		assertEquals("Nueva Descripcion Larga", news.getDescripcion());
 
-		news.setInteres(Interest.alto);
-		assertEquals(Interest.alto, news.getInteres());
+		news.setJugador("Nuevo Jugador");
+		assertEquals("Nuevo Jugador", news.getJugador());
 
 		List<String> listaTags = new ArrayList<>();
 		listaTags.add("#fútbol");
@@ -94,7 +93,7 @@ public class NewsTest {
 		// Verificamos que contenga los campos clave
 		assertTrue(ts.contains("News ["));
 		assertTrue(ts.contains("fecha=" + hoy));
-		assertTrue(ts.contains("interes=medio"));
+		assertTrue(ts.contains("jugador=Nombre del Jugador"));
 	}
 
 	@Test
@@ -108,16 +107,5 @@ public class NewsTest {
 		news.setEtiquetasString("solotag");
 		assertEquals(1, news.getEtiquetas().size());
 		assertEquals("solotag", news.getEtiquetasString());
-	}
-
-	@Test
-	public void testInterestMethods() {
-		// Prueba el toString() personalizado
-		assertEquals("alto", Interest.alto.toString());
-
-		// Prueba fromString con conversión a minúsculas
-		assertEquals(Interest.alto, Interest.fromString("ALTO"));
-		assertEquals(Interest.medio, Interest.fromString("Medio"));
-		assertEquals(Interest.bajo, Interest.fromString("bajo"));
 	}
 }

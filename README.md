@@ -145,6 +145,26 @@ Para los seleccionados:
 - Se obtiene id del equipo que está en 2026 (que no incluya su nacionalidad): `https://v3.football.api-sports.io/players/teams?player=276`
 - Se obtiene la liga en la que está el equipo en 2026 (elegir la de tipo liga, que no sea del mundo y mayor duración): `https://v3.football.api-sports.io/leagues?team=128`
 
+## Llamadas a CORBA
+
+```bash
+➜  ~ curl 'http://localhost:8084/' --data-raw 'title=Titulo&player=Nombre+del+Jugador&description=Descripcion+de+ejemplo&labels=%23etiqueta1+%23etiqueta2&action=Enviar&format=json'
+
+{"status":"success", "message":"La noticia se ha insertado correctamente (2/5)", "current":2, "max":5}
+
+➜  ~ curl 'http://localhost:8084/' --data-raw 'action=Leer&format=json'
+
+{"status":"success", "message":"La noticia se ha leido correctamente. Noticias restantes: 2/5", "news": {"title":"Titulo", "description":"Descripcion de ejemplo", "date":"31/05/2026", "player":"Nombre del Jugador", "labels":"#etiqueta1 #etiqueta2"}}
+
+➜  ~ curl 'http://localhost:8084/' --data-raw 'action=Recibir&format=json'
+
+{"status":"success", "message":"La noticia se ha recibido correctamente. Noticias restantes: 1/5", "news": {"title":"Titulo", "description":"Descripcion de ejemplo", "date":"31/05/2026", "player":"Nombre del Jugador", "labels":"#etiqueta1 #etiqueta2"}}
+
+➜  ~ curl 'http://localhost:8084/' --data-raw 'limit=10&action=Limitar&format=json'
+
+{"status":"success", "message":"El nuevo limite del buffer es 10. Numero de noticias: 1", "limit":10, "current":1}
+```
+
 ## Obtener token de Firebase en desarrollo
 
 ```bash

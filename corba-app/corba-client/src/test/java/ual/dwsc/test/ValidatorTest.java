@@ -19,14 +19,14 @@ public class ValidatorTest {
 		xmlPath = "src/main/webapp/noticias_valid.xml";
 	}
 
-	// --- TESTS DE VALIDACIÓN POR STRING ---
+	// --- TESTS DE VALIDACIÓN POR STRING ---
 
 	@Test
 	public void testValidateXMLFromString_Success() {
 		String validXML = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" + "<noticias><noticia>"
 				+ "<fecha>23/03/2026</fecha>" + "<titulo>Titulo Valido</titulo>"
 				+ "<descripcion>Esta es una descripcion lo suficientemente larga para el XSD</descripcion>"
-				+ "<interes>alto</interes>" + "<etiquetas><etiqueta>#Test</etiqueta></etiquetas>"
+				+ "<jugador>Nombre del Jugador</jugador>" + "<etiquetas><etiqueta>#Test</etiqueta></etiquetas>"
 				+ "</noticia></noticias>";
 
 		assertTrue(Validator.validateXMLFromString(validXML, xsdPath), "El XML deberí­a ser válido");
@@ -38,7 +38,7 @@ public class ValidatorTest {
 		String invalidXML = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" + "<noticias><noticia>"
 				+ "<fecha>23/03/2026</fecha>" + "<titulo>A</titulo>"
 				+ "<descripcion>Descripción válida y larga para pasar el filtro del XSD</descripcion>"
-				+ "<interes>alto</interes>" + "<etiquetas><etiqueta>#Test</etiqueta></etiquetas>"
+				+ "<jugador>Nombre del Jugador</jugador>" + "<etiquetas><etiqueta>#Test</etiqueta></etiquetas>"
 				+ "</noticia></noticias>";
 
 		assertFalse(Validator.validateXMLFromString(invalidXML, xsdPath), "Deberí­a fallar por longitud de tí­tulo");
@@ -50,7 +50,7 @@ public class ValidatorTest {
 		assertFalse(Validator.validateXMLFromString(malformedXML, xsdPath), "Debería fallar por XML mal formado");
 	}
 
-	// --- TESTS DE VALIDACIÓN POR ARCHIVO ---
+	// --- TESTS DE VALIDACIÓN POR ARCHIVO ---
 
 	@Test
 	public void testValidate_Success() {
@@ -68,7 +68,7 @@ public class ValidatorTest {
 				"Deberí­a retornar false si el archivo no existe");
 	}
 
-	// --- TESTS DE VALORES NULOS O VACÍOS (Cobertura de ramas if) ---
+	// --- TESTS DE VALORES NULOS O VACÍOS (Cobertura de ramas if) ---
 
 	@Test
 	public void testNullInputs() {
@@ -78,21 +78,6 @@ public class ValidatorTest {
 
 		assertFalse(Validator.validateXMLFromString(null, xsdPath));
 		assertFalse(Validator.validateXMLFromString("<xml/>", ""));
-	}
-
-	// --- TEST DE ERROR SEMÁNTICO (Enumerados) ---
-
-	@Test
-	public void testInvalidEnumeration() {
-		// Interés "super-alto" no existe en el XSD
-		String invalidEnumXML = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" + "<noticias><noticia>"
-				+ "<fecha>23/03/2026</fecha>" + "<titulo>Titulo Valido</titulo>"
-				+ "<descripcion>Descripcion de mas de veinte caracteres para validar</descripcion>"
-				+ "<interes>super-alto</interes>" + "<etiquetas><etiqueta>#Java</etiqueta></etiquetas>"
-				+ "</noticia></noticias>";
-
-		assertFalse(Validator.validateXMLFromString(invalidEnumXML, xsdPath),
-				"Deberí­a fallar porque 'super-alto' no está permitido");
 	}
 
 	@Test

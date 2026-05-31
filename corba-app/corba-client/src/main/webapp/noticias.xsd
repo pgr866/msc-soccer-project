@@ -27,12 +27,10 @@
 									</xs:restriction>
 								</xs:simpleType>
 							</xs:element>
-							<xs:element name="interes">
+							<xs:element name="jugador">
 								<xs:simpleType>
 									<xs:restriction base="xs:string">
-										<xs:enumeration value="alto" />
-										<xs:enumeration value="medio" />
-										<xs:enumeration value="bajo" />
+										<xs:pattern value="(\S\s*){1,100}" />
 									</xs:restriction>
 								</xs:simpleType>
 							</xs:element>

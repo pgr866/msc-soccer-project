@@ -9,7 +9,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import java.nio.file.Path;
-import ual.dwsc.core.Interest;
 import ual.dwsc.core.News;
 import ual.dwsc.xmlib.XMLCoder;
 import ual.dwsc.xmlib.XMLDecoder;
@@ -25,7 +24,7 @@ public class XMLCoderDecoderTest {
 	@BeforeEach
 	public void setUp() throws Exception {
 		newsList = new ArrayList<>();
-		News n1 = new News("23/03/2026", "Titulo de prueba", "Descripcion de prueba larga", Interest.alto,
+		News n1 = new News("23/03/2026", "Titulo de prueba", "Descripcion de prueba larga", "Nombre del Jugador",
 				Arrays.asList("#UAL", "#Informatica"));
 		newsList.add(n1);
 
@@ -50,10 +49,11 @@ public class XMLCoderDecoderTest {
 	}
 
 	@Test
-	public void testCoder_EmptyList() throws Exception {
+	public void testCoder_EmptyList() {
 		List<News> emptyList = new ArrayList<>();
-		String result = XMLCoder.codeXML(emptyList, tempPath);
-		assertEquals("ERROR empty list", result);
+		assertThrows(Exception.class, () -> {
+			XMLCoder.codeXML(emptyList, tempPath);
+		});
 	}
 
 	@Test
@@ -69,14 +69,14 @@ public class XMLCoderDecoderTest {
 	public void testDecoder_Success() {
 		String xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" + "<noticias><noticia>"
 				+ "<fecha>23/03/2026</fecha><titulo>Test</titulo>"
-				+ "<descripcion>Descripcion larga de prueba</descripcion>" + "<interes>medio</interes>"
+				+ "<descripcion>Descripcion larga de prueba</descripcion>" + "<jugador>Nombre del Jugador</jugador>"
 				+ "<etiquetas><etiqueta>#Tag</etiqueta></etiquetas>" + "</noticia></noticias>";
 
 		List<News> result = XMLDecoder.decodeXML(xml);
 
 		assertEquals(1, result.size());
 		assertEquals("Test", result.get(0).getTitulo());
-		assertEquals(Interest.medio, result.get(0).getInteres());
+		assertEquals("Nombre del Jugador", result.get(0).getJugador());
 	}
 
 	@Test
@@ -92,21 +92,10 @@ public class XMLCoderDecoderTest {
 	public void testDecoder_MissingElements() {
 		// Falta el elemento <fecha>, que es requerido por el if del Decoder
 		String missingElement = "<noticias><noticia>" + "<titulo>Test</titulo><descripcion>Desc</descripcion>"
-				+ "<interes>bajo</interes><etiquetas></etiquetas>" + "</noticia></noticias>";
+				+ "<jugador>Nombre del Jugador</jugador><etiquetas></etiquetas>" + "</noticia></noticias>";
 
 		List<News> result = XMLDecoder.decodeXML(missingElement);
 		assertTrue(result.isEmpty(), "Debe fallar si faltan nodos requeridos");
-	}
-
-	@Test
-	public void testDecoder_InvalidInterest() {
-		// Interés que no existe en el enum
-		String badInterest = "<noticias><noticia>"
-				+ "<fecha>01/01/2024</fecha><titulo>T</titulo><descripcion>D</descripcion>"
-				+ "<interes>super-alto</interes><etiquetas></etiquetas>" + "</noticia></noticias>";
-
-		List<News> result = XMLDecoder.decodeXML(badInterest);
-		assertTrue(result.isEmpty());
 	}
 
 	@Test
@@ -118,7 +107,7 @@ public class XMLCoderDecoderTest {
 		String xmlWithComment = "<?xml version='1.0' encoding='UTF-8'?>" + "<noticias>" + "<noticia>"
 				+ "<fecha>23/03/2026</fecha><titulo>Test</titulo>"
 				+ "<descripcion>Descripcion larga de prueba</descripcion>"
-				+ "<interes>medio</interes><etiquetas></etiquetas>" + "</noticia></noticias>";
+				+ "<jugador>Nombre del Jugador</jugador><etiquetas></etiquetas>" + "</noticia></noticias>";
 
 		List<News> result = XMLDecoder.decodeXML(xmlWithComment);
 		assertFalse(result.isEmpty());
@@ -128,31 +117,31 @@ public class XMLCoderDecoderTest {
 	public void testDecoder_MissingFieldsBranches() {
 		// 1. Probar que falta TITULO (lanza Exception "titulo es un campo requerido")
 		String noTitle = "<noticias><noticia><fecha>23/03/2026</fecha>"
-				+ "<descripcion>Desc</descripcion><interes>bajo</interes>"
+				+ "<descripcion>Desc</descripcion><jugador>Nombre del Jugador</jugador>"
 				+ "<etiquetas></etiquetas></noticia></noticias>";
 		assertTrue(XMLDecoder.decodeXML(noTitle).isEmpty());
 
 		// 2. Probar que falta DESCRIPCION (lanza Exception "descripcion es un campo
 		// requerido")
 		String noDesc = "<noticias><noticia><fecha>23/03/2026</fecha>"
-				+ "<titulo>Titulo</titulo><interes>bajo</interes>" + "<etiquetas></etiquetas></noticia></noticias>";
+				+ "<titulo>Titulo</titulo><jugador>Nombre del Jugador</jugador>" + "<etiquetas></etiquetas></noticia></noticias>";
 		assertTrue(XMLDecoder.decodeXML(noDesc).isEmpty());
 
-		// 3. Probar que falta INTERES (lanza Exception "interes es un campo requerido")
-		String noInterest = "<noticias><noticia><fecha>23/03/2026</fecha>"
+		// 3. Probar que falta JUGADOR (lanza Exception "jugador es un campo requerido")
+		String noPlayer = "<noticias><noticia><fecha>23/03/2026</fecha>"
 				+ "<titulo>Titulo</titulo><descripcion>Descripcion larga</descripcion>"
 				+ "<etiquetas></etiquetas></noticia></noticias>";
-		assertTrue(XMLDecoder.decodeXML(noInterest).isEmpty());
+		assertTrue(XMLDecoder.decodeXML(noPlayer).isEmpty());
 
 		// 4. Probar que falta ETIQUETAS (lanza Exception "etiquetas es un campo
 		// requerido")
 		String noLabels = "<noticias><noticia><fecha>23/03/2026</fecha>"
 				+ "<titulo>Titulo</titulo><descripcion>Descripcion larga</descripcion>"
-				+ "<interes>bajo</interes></noticia></noticias>";
+				+ "<jugador>Nombre del Jugador</jugador></noticia></noticias>";
 		assertTrue(XMLDecoder.decodeXML(noLabels).isEmpty());
 	}
 
-	// --- TEST DE INTEGRACIÓN (CODER + DECODER) ---
+	// --- TEST DE INTEGRACIÓN (CODER + DECODER) ---
 
 	@Test
 	public void testIntegracion_CoderToDecoder() throws Exception {
@@ -165,7 +154,7 @@ public class XMLCoderDecoderTest {
 		// 3. Comparar resultados
 		assertEquals(newsList.size(), decodedList.size());
 		assertEquals(newsList.get(0).getTitulo(), decodedList.get(0).getTitulo());
-		assertEquals(newsList.get(0).getInteres(), decodedList.get(0).getInteres());
+		assertEquals(newsList.get(0).getJugador(), decodedList.get(0).getJugador());
 		assertEquals(newsList.get(0).getEtiquetas().get(0), decodedList.get(0).getEtiquetas().get(0));
 	}
 }

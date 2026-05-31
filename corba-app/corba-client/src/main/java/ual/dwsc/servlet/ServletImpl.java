@@ -17,7 +17,6 @@ import org.omg.CosNaming.NamingContextExtHelper;
 import ual.dwsc.bufferapp.NewsBuffer;
 import ual.dwsc.bufferapp.NewsBufferHelper;
 import ual.dwsc.core.News;
-import ual.dwsc.core.Interest;
 import ual.dwsc.xmlib.Validator;
 import ual.dwsc.xmlib.XMLCoder;
 import ual.dwsc.xmlib.XMLDecoder;
@@ -47,72 +46,78 @@ public class ServletImpl extends HttpServlet {
 	}
 
 	/**
+	 * Método auxiliar para evitar que caracteres especiales rompan el JSON
+	 */
+	private String escapeJson(String str) {
+		return str.replace("\"", "\\\"").replace("\n", "\\n").replace("\r", "\\r");
+	}
+
+	/**
 	 * Gestiona las peticiones POST del formulario. Identifica la accion pulsada
 	 * (Enviar, Recibir, Leer o Limitar) y deriva el flujo
 	 */
 	@Override
 	public void doPost(HttpServletRequest req, HttpServletResponse response) throws IOException, ServletException {
 		String action = req.getParameter("action");
-		response.setContentType("text/html");
+		String formatParam = req.getParameter("format");
+		boolean isJson = "json".equals(formatParam);
+		if (isJson) {
+			response.setContentType("application/json");
+		} else {
+			response.setContentType("text/html");
+		}
 		PrintWriter out = response.getWriter();
-
 		if (action.compareTo("Enviar") == 0) {
 			String title = req.getParameter("title");
 			String description = req.getParameter("description");
-			String interestStr = req.getParameter("interest");
+			String player = req.getParameter("player");
 			String labels = req.getParameter("labels");
-
-			Interest interest = Interest.valueOf(interestStr);
-			News news = new News(title, description, interest, labels);
-			this.send(out, news);
-
+			News news = new News(title, description, player, labels);
+			this.send(out, news, isJson);
 		} else if (action.compareTo("Recibir") == 0) {
-			this.get(out);
+			this.get(out, isJson);
 		} else if (action.compareTo("Leer") == 0) {
-			this.read(out);
+			this.read(out, isJson);
 		} else if (action.compareTo("Limitar") == 0) {
-			String limitString = req.getParameter("limit");
-			this.limit(out, limitString);
+			this.limit(out, req.getParameter("limit"), isJson);
 		} else {
-			printHTML(out, this.alertHTML("Accion '" + action + "' no reconocida", false), null);
-		}
+            String errorMsg = "Accion '" + action + "' no reconocida";
+            String errorJson = String.format("{\"status\":\"error\", \"message\":\"%s\"}", escapeJson(errorMsg));
+            outputResponse(out, isJson, errorJson, this.alertHTML(errorMsg, false), null);
+        }
 	}
 
 	/**
 	 * Actua como Productor. Convierte la noticia a XML, la valida contra el XSD y
 	 * la inserta en el buffer CORBA
 	 */
-	protected void send(PrintWriter out, News news) throws IOException {
+	protected void send(PrintWriter out, News news, boolean isJson) throws IOException {
 		try {
 			getreference();
 			if (news.getTitulo().isEmpty() || news.getDescripcion().isEmpty() || news.getEtiquetasString().isEmpty()) {
-				throw new Exception("Introduce todos los parametros (titulo, interes, descripcion y etiquetas)");
+				throw new Exception("Introduce todos los parametros (titulo, jugador, descripcion y etiquetas)");
 			}
-
 			List<News> listNews = new ArrayList<>();
 			listNews.add(news);
-
 			ServletContext path = getServletContext();
 			String newsXML = XMLCoder.codeXML(listNews, path.getRealPath("/noticias.xml"));
-			// Validacion semantica
 			boolean validation = Validator.validateXMLFromString(newsXML, path.getRealPath("/noticias.xsd"));
 			if (!validation) {
 				throw new Exception("Error en la validacion semantica del documento XML generado");
 			}
-
 			if (!bufferImpl.put(newsXML)) {
 				int maxNews = bufferImpl.getMaxNews();
 				throw new Exception("Se ha alcanzado el limite de noticias almacenadas en el buffer (" + maxNews + ")");
 			}
-
 			int nNews = bufferImpl.getNewsLength();
 			int maxNews = bufferImpl.getMaxNews();
-			printHTML(out,
-					this.alertHTML("La noticia se ha insertado correctamente (" + nNews + "/" + maxNews + ")", true),
-					null);
-
+			String msg = "La noticia se ha insertado correctamente (" + nNews + "/" + maxNews + ")";
+			String json = String.format("{\"status\":\"success\", \"message\":\"%s\", \"current\":%d, \"max\":%d}", 
+										escapeJson(msg), nNews, maxNews);
+			outputResponse(out, isJson, json, this.alertHTML(msg, true), null);
 		} catch (Exception e) {
-			printHTML(out, this.alertHTML(e.getMessage(), false), news);
+			String errorJson = String.format("{\"status\":\"error\", \"message\":\"%s\"}", escapeJson(e.getMessage()));
+			outputResponse(out, isJson, errorJson, this.alertHTML(e.getMessage(), false), news);
 		}
 	}
 
@@ -120,28 +125,38 @@ public class ServletImpl extends HttpServlet {
 	 * Consulta la noticia mas antigua sin eliminarla del buffer. Recupera el XML
 	 * del servidor CORBA y lo reconstruye en un objeto News
 	 */
-	protected void read(PrintWriter out) {
+	protected void read(PrintWriter out, boolean isJson) {
 		try {
 			getreference();
 			StringHolder aux = new StringHolder();
 			boolean status = bufferImpl.read(aux);
-
 			if (status) {
 				ServletContext path = getServletContext();
 				boolean validation = Validator.validateXMLFromString(aux.value, path.getRealPath("/noticias.xsd"));
 				if (!validation)
 					throw new Exception("Error en la validacion semantica del documento XML leido");
-
 				List<News> listNews = XMLDecoder.decodeXML(aux.value);
+				News n = listNews.get(0);
 				int nNews = bufferImpl.getNewsLength();
 				int maxNews = bufferImpl.getMaxNews();
 				String msg = "La noticia se ha leido correctamente. Noticias restantes: " + nNews + "/" + maxNews;
-				printHTML(out, this.newsHTML(listNews.get(0)) + this.alertHTML(msg, true), null);
+				String json = String.format(
+					"{\"status\":\"success\", \"message\":\"%s\", \"news\": {\"title\":\"%s\", \"description\":\"%s\", \"date\":\"%s\", \"player\":\"%s\", \"labels\":\"%s\"}}",
+					escapeJson(msg),
+					escapeJson(n.getTitulo()),
+					escapeJson(n.getDescripcion()),
+					escapeJson(n.getFecha()),
+					escapeJson(n.getJugador()),
+					escapeJson(n.getEtiquetasString())
+				);
+				outputResponse(out, isJson, json, this.newsHTML(n) + this.alertHTML(msg, true), null);
 			} else {
-				printHTML(out, this.alertHTML("Buffer vacio", false), null);
+				String errorJson = "{\"status\":\"error\", \"message\":\"Buffer vacio\"}";
+				outputResponse(out, isJson, errorJson, this.alertHTML("Buffer vacio", false), null);
 			}
 		} catch (Exception e) {
-			printHTML(out, this.alertHTML(e.getMessage(), false), null);
+			String errorJson = String.format("{\"status\":\"error\", \"message\":\"%s\"}", escapeJson(e.getMessage()));
+			outputResponse(out, isJson, errorJson, this.alertHTML(e.getMessage(), false), null);
 		}
 	}
 
@@ -149,35 +164,45 @@ public class ServletImpl extends HttpServlet {
 	 * Actua como Consumidor. Recupera la noticia del buffer y la elimina del
 	 * servidor CORBA
 	 */
-	protected void get(PrintWriter out) {
+	protected void get(PrintWriter out, boolean isJson) {
 		try {
 			getreference();
 			StringHolder aux = new StringHolder();
 			boolean status = bufferImpl.get(aux);
-
 			if (status) {
 				ServletContext path = getServletContext();
 				boolean validation = Validator.validateXMLFromString(aux.value, path.getRealPath("/noticias.xsd"));
 				if (!validation)
 					throw new Exception("Error en la validacion semantica del documento XML recibido");
-
 				List<News> listNews = XMLDecoder.decodeXML(aux.value);
+				News n = listNews.get(0);
 				int nNews = bufferImpl.getNewsLength();
 				int maxNews = bufferImpl.getMaxNews();
 				String msg = "La noticia se ha recibido correctamente. Noticias restantes: " + nNews + "/" + maxNews;
-				printHTML(out, this.newsHTML(listNews.get(0)) + this.alertHTML(msg, true), null);
+				String json = String.format(
+					"{\"status\":\"success\", \"message\":\"%s\", \"news\": {\"title\":\"%s\", \"description\":\"%s\", \"date\":\"%s\", \"player\":\"%s\", \"labels\":\"%s\"}}",
+					escapeJson(msg),
+					escapeJson(n.getTitulo()),
+					escapeJson(n.getDescripcion()),
+					escapeJson(n.getFecha()),
+					escapeJson(n.getJugador()),
+					escapeJson(n.getEtiquetasString())
+				);
+				outputResponse(out, isJson, json, this.newsHTML(n) + this.alertHTML(msg, true), null);
 			} else {
-				printHTML(out, this.alertHTML("No hay noticias para recibir", false), null);
+				String errorJson = "{\"status\":\"error\", \"message\":\"No hay noticias para recibir\"}";
+				outputResponse(out, isJson, errorJson, this.alertHTML("No hay noticias para recibir", false), null);
 			}
 		} catch (Exception e) {
-			printHTML(out, this.alertHTML(e.getMessage(), false), null);
+			String errorJson = String.format("{\"status\":\"error\", \"message\":\"%s\"}", escapeJson(e.getMessage()));
+			outputResponse(out, isJson, errorJson, this.alertHTML(e.getMessage(), false), null);
 		}
 	}
 
 	/**
 	 * Modifica dinamicamente el tamaño maximo del buffer en el servidor
 	 */
-	protected void limit(PrintWriter out, String limitString) {
+	protected void limit(PrintWriter out, String limitString, boolean isJson) {
 		try {
 			getreference();
 			if (limitString == null || limitString.isEmpty())
@@ -185,14 +210,17 @@ public class ServletImpl extends HttpServlet {
 			int limit = Integer.valueOf(limitString);
 			if (limit <= 0)
 				throw new Exception("El campo limite debe ser mayor que cero");
-
 			bufferImpl.fijarLimiteNoticias(limit);
 			int nNews = bufferImpl.getNewsLength();
-			printHTML(out,
-					this.alertHTML("El nuevo limite del buffer es " + limit + ". Numero de noticias: " + nNews, true),
-					null);
+			String msg = "El nuevo limite del buffer es " + limit + ". Numero de noticias: " + nNews;
+			String json = String.format(
+				"{\"status\":\"success\", \"message\":\"%s\", \"limit\":%d, \"current\":%d}",
+				escapeJson(msg), limit, nNews
+			);
+			outputResponse(out, isJson, json, this.alertHTML(msg, true), null);
 		} catch (Exception e) {
-			printHTML(out, this.alertHTML(e.getMessage(), false), null);
+			String errorJson = String.format("{\"status\":\"error\", \"message\":\"%s\"}", escapeJson(e.getMessage()));
+			outputResponse(out, isJson, errorJson, this.alertHTML(e.getMessage(), false), null);
 		}
 	}
 
@@ -202,9 +230,24 @@ public class ServletImpl extends HttpServlet {
 	 */
 	@Override
 	public void doGet(HttpServletRequest req, HttpServletResponse response) throws IOException, ServletException {
-		response.setContentType("text/html");
-		PrintWriter out = response.getWriter();
-		this.printHTML(out, "", null);
+		boolean isJson = "json".equals(req.getParameter("format"));
+		if (isJson) {
+			response.setContentType("application/json");
+			PrintWriter out = response.getWriter();
+			out.println("{\"status\":\"ready\", \"message\":\"Esperando peticiones POST para operar con el buffer\"}");
+		} else {
+			response.setContentType("text/html");
+			PrintWriter out = response.getWriter();
+			this.printHTML(out, "", null);
+		}
+	}
+
+	private void outputResponse(PrintWriter out, boolean isJson, String jsonPayload, String htmlContent, News newsObject) {
+		if (isJson) {
+			out.println(jsonPayload);
+		} else {
+			printHTML(out, htmlContent, newsObject);
+		}
 	}
 
 	// --- METODOS DE GENERACION HTML ---
@@ -246,14 +289,10 @@ public class ServletImpl extends HttpServlet {
 		sb.append("<input type='text' name='title' placeholder='5-30 caracteres' value='")
 				.append(news != null ? news.getTitulo() : "").append("'></div>");
 
-		// Campo Interes
-		sb.append("<div class='label-input half'><label for='interest'>Interés:</label><select name='interest'>");
-		for (Interest i : Interest.values()) {
-			String selected = (news != null && news.getInteres() == i) ? " selected" : "";
-			sb.append("<option value='").append(i.name()).append("'").append(selected).append(">").append(i.name())
-					.append("</option>");
-		}
-		sb.append("</select></div>");
+		// Campo Jugador
+		sb.append("<div class='label-input half'><label for='player'>Jugador relacionado:</label>");
+		sb.append("<input type='text' name='player' placeholder='1-100 caracteres' value='")
+				.append(news != null ? news.getJugador() : "").append("'></div>");
 		sb.append("</div>");
 
 		// Descripción (Descripcion larga)
@@ -286,8 +325,8 @@ public class ServletImpl extends HttpServlet {
 
 	/** Genera la representacion visual de una noticia recuperada del buffer */
 	private String newsHTML(News news) {
-		return "<div class='news'><h3>" + news.getTitulo() + "</h3>" + "<p><i>" + news.getFecha() + " - Interes: "
-				+ news.getInteres() + "</i></p>" + "<p>" + news.getDescripcion() + "</p>" + "<p class='news-labels'>"
+		return "<div class='news'><h3>" + news.getTitulo() + "</h3>" + "<p><i>" + news.getFecha() + " - Jugador: "
+				+ news.getJugador() + "</i></p>" + "<p>" + news.getDescripcion() + "</p>" + "<p class='news-labels'>"
 				+ news.getEtiquetasString() + "</p></div>";
 	}
 
@@ -314,7 +353,7 @@ public class ServletImpl extends HttpServlet {
 				+ ".half { flex: 1; margin-bottom: 0 !important; }"
 				+ ".label-input { display: flex; flex-direction: column; margin-bottom: 10px; }"
 				+ "h2, h3, p { margin-top: 0; margin-bottom: 10px; }"
-				+ "input, textarea, select { padding: 8px; border: 1px solid #ccc; border-radius: 4px; width: 100%; box-sizing: border-box; font-family: inherit; }"
+				+ "input, textarea { padding: 8px; border: 1px solid #ccc; border-radius: 4px; width: 100%; box-sizing: border-box; font-family: inherit; }"
 				+ "textarea { height: 36px; min-height: 36px; resize: vertical; }"
 				+ ".buttons { display: flex; gap: 12px; margin-top: 10px; }"
 				+ ".alert-floating { position: fixed; bottom: 20px; right: 20px; z-index: 9999; padding: 16px 24px; color: white; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); transition: all 0.5s ease; min-width: 250px; text-align: center; font-weight: 500; }"

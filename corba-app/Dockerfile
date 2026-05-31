@@ -11,7 +11,7 @@ WORKDIR /usr/local/tomcat
 RUN rm -rf webapps/*
 COPY --from=build /app/corba-server/target/*.jar ./app-server.jar
 COPY --from=build /app/corba-client/target/*.war ./webapps/ROOT.war
-EXPOSE 8080
+EXPOSE 8084 1050
 ENTRYPOINT ["sh", "-c", "\
     CLIENT_CORBA_PORT=${CLIENT_CORBA_PORT:-8080}; \
     ORB_CORBA_PORT=${ORB_CORBA_PORT:-1050}; \

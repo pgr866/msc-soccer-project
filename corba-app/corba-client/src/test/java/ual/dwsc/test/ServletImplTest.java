@@ -28,7 +28,7 @@ public class ServletImplTest {
                            "<fecha>09/05/2026</fecha>" +
                            "<titulo>Titulo Valido Largo</titulo>" +
                            "<descripcion>Esta descripcion es suficientemente larga para pasar el validador</descripcion>" +
-                           "<interes>alto</interes>" +
+                           "<jugador>Nombre del Jugador</jugador>" +
                            "<etiquetas><etiqueta>#test</etiqueta></etiquetas>" +
                            "</noticia></noticias>";
         Mockito.doAnswer(invocation -> {
@@ -69,7 +69,7 @@ public class ServletImplTest {
 		Mockito.when(request.getParameter("title")).thenReturn("Titulo Valido Largo");
 		Mockito.when(request.getParameter("description"))
 				.thenReturn("Esta descripcion es suficientemente larga para validar el envio correctamente");
-		Mockito.when(request.getParameter("interest")).thenReturn("alto");
+		Mockito.when(request.getParameter("player")).thenReturn("Nombre del Jugador");
 		Mockito.when(request.getParameter("labels")).thenReturn("#label1 #label2");
 
 		servlet.doPost(request, response);
@@ -98,7 +98,7 @@ public class ServletImplTest {
 		Mockito.when(request.getParameter("action")).thenReturn("Enviar");
 		Mockito.when(request.getParameter("title")).thenReturn("");
 		Mockito.when(request.getParameter("description")).thenReturn("");
-		Mockito.when(request.getParameter("interest")).thenReturn("alto");
+		Mockito.when(request.getParameter("player")).thenReturn("");
 		Mockito.when(request.getParameter("labels")).thenReturn("");
 
 		ServletImpl servlet = new ServletImpl();
@@ -106,7 +106,7 @@ public class ServletImplTest {
 		writer.flush();
 
 		String result = stringWriter.toString().trim();
-		assertTrue(result.contains("Introduce todos los parametros (titulo, interes, descripcion y etiquetas)"));
+		assertTrue(result.contains("Introduce todos los parametros (titulo, jugador, descripcion y etiquetas)"));
 	}
 
 	@Test
@@ -132,7 +132,7 @@ public class ServletImplTest {
 		Mockito.when(request.getParameter("action")).thenReturn("Enviar");
 		Mockito.when(request.getParameter("title")).thenReturn("012"); // Provoca el fallo XSD
 		Mockito.when(request.getParameter("description")).thenReturn("0123456789 0123456789 0123456789 0123456789");
-		Mockito.when(request.getParameter("interest")).thenReturn("alto");
+		Mockito.when(request.getParameter("player")).thenReturn("Nombre del Jugador");
 		Mockito.when(request.getParameter("labels")).thenReturn("#label1");
 
 		ServletImpl servlet = new ServletImpl();
@@ -194,7 +194,7 @@ public class ServletImplTest {
 		Mockito.when(request.getParameter("title")).thenReturn("Titulo Valido");
 		Mockito.when(request.getParameter("description"))
 				.thenReturn("Esta descripcion tiene mas de veinte caracteres para validar");
-		Mockito.when(request.getParameter("interest")).thenReturn("alto");
+		Mockito.when(request.getParameter("player")).thenReturn("Nombre del Jugador");
 		Mockito.when(request.getParameter("labels")).thenReturn("#test");
 		servlet.doPost(request, response);
 
