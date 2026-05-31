@@ -118,20 +118,20 @@
       </ion-item>
 
       <h3 class="subtitle ion-margin-horizontal">Ubicación de registro</h3>
-      <div class="map-container ion-margin">
+      <div class="ion-margin">
         <capacitor-google-map #map class="interactive-map">
         </capacitor-google-map>
         <p class="ion-text-center">
           Lat: {{ playerForm.get('latitude')?.value | number:'1.4-4' }},
           Long: {{ playerForm.get('longitude')?.value | number:'1.4-4' }}
         </p>
-        <ion-button expand="block" class="small-centered-button" (click)="resetLocation()">
-          <ion-icon name="locate"></ion-icon>&nbsp;Reset
+        <ion-button class="small-centered-button" (click)="resetLocation()">
+          <ion-icon class="ion-margin-end" name="locate"></ion-icon>Reset
         </ion-button>
       </div>
-      <ion-button expand="block" class="medium-centered-button ion-margin-top" type="submit"
+      <ion-button class="small-centered-button" type="submit"
         [disabled]="playerForm.invalid">
-        Crear Jugador
+        <ion-icon class="ion-margin-end" name="save"></ion-icon>Crear Jugador
       </ion-button>
     </form>
   </ion-card>

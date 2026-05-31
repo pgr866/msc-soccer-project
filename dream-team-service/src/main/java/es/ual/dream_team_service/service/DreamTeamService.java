@@ -47,7 +47,7 @@ public class DreamTeamService {
                 "3. If empty, return empty array. 4. Creative Spanish name. " +
                 "5. Return ONLY raw JSON: {\"name\": \"...\", \"playerIds\": [...]}";
         Map<String, Object> request = Map.of(
-            "model", "llama-3.1-8b-instant",
+            "model", "openai/gpt-oss-120b",
             "messages", List.of(Map.of("role", "user", "content", prompt))
         );
         Map<String, Object> response = groqClient.getCompletion("Bearer " + apiKey, request);

@@ -16,3 +16,10 @@ export interface PlayerDetail {
   player: Player;
   comments: Comment[];
 }
+
+export interface CreateCommentDto {
+  text: string;
+  rating: number;
+  latitude: number;
+  longitude: number;
+}
