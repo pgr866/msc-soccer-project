@@ -28,35 +28,41 @@ public class XMLCoder {
 	 * una cadena de texto
 	 */
 	public static String codeXML(List<News> news, String path) throws Exception {
-		if (news.isEmpty()) {
-			return "ERROR empty list";
-		} else {
+		if (news == null || news.isEmpty()) {
+			throw new Exception("Lista de noticias vacía");
+		}
+
+		try {
 			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 			DocumentBuilder builder = factory.newDocumentBuilder();
-			DOMImplementation implementation = builder.getDOMImplementation();
-			Document document = implementation.createDocument(null, "noticias", null);
+			Document document = builder.newDocument();
 			document.setXmlVersion("1.0");
 
 			// Main Node
-			Element root = document.getDocumentElement();
+			Element root = document.createElement("noticias");
+			document.appendChild(root);
 			buildXML(news, document, root);
 
 			// Generate XML file
-			Source source = new DOMSource(document);
-			StreamResult resultFile = new StreamResult(new File(path));
-
-			StringWriter writer = new StringWriter();
-			StreamResult stringResult = new StreamResult(writer);
-
 			Transformer transformer = TransformerFactory.newInstance().newTransformer();
 			// Indentacion para que no salga todo en una linea
 			transformer.setOutputProperty(OutputKeys.INDENT, "yes");
 
-			// Transformamos tanto al archivo como al string de retorno
-			transformer.transform(source, resultFile);
-			transformer.transform(source, stringResult);
+			File file = new File(path);
+			if (file.getParentFile() != null && !file.getParentFile().exists()) {
+				throw new Exception("Ruta inválida o directorio no encontrado");
+			}
 
+			// Transformamos tanto al archivo como al string de retorno
+			transformer.transform(new DOMSource(document), new StreamResult(file));
+
+			StringWriter writer = new StringWriter();
+			transformer.transform(new DOMSource(document), new StreamResult(writer));
+			
 			return writer.toString();
+
+		} catch (Exception e) {
+			throw new Exception("Error al procesar el XML", e);
 		}
 	}
 

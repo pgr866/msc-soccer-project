@@ -49,10 +49,11 @@ public class XMLCoderDecoderTest {
 	}
 
 	@Test
-	public void testCoder_EmptyList() throws Exception {
+	public void testCoder_EmptyList() {
 		List<News> emptyList = new ArrayList<>();
-		String result = XMLCoder.codeXML(emptyList, tempPath);
-		assertEquals("ERROR empty list", result);
+		assertThrows(Exception.class, () -> {
+			XMLCoder.codeXML(emptyList, tempPath);
+		});
 	}
 
 	@Test
