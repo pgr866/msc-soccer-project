@@ -5,8 +5,8 @@ import java.time.LocalDate;
 public record ExternalPlayerDTO(
     Long id,
     String name,
-    String first_name,
-    String last_name,
+    String firstName,
+    String lastName,
     Integer age,
     LocalDate birthdate,
     String nationality,
@@ -14,5 +14,5 @@ public record ExternalPlayerDTO(
     Double weight,
     Integer number,
     String position,
-    String photo_url
+    String photoUrl
 ) {}

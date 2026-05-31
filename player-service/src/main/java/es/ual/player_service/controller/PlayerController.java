@@ -349,7 +349,7 @@ public class PlayerController {
         description = "List of external players found",
         content = @Content(
             mediaType = MediaType.APPLICATION_JSON_VALUE,
-            examples = @ExampleObject(value = "[{\"id\": 276, \"name\": \"Neymar\", \"first_name\": \"Neymar\", \"last_name\": \"da Silva Santos Júnior\", \"age\": 34, \"birthdate\": \"1992-02-05\", \"nationality\": \"Brazil\", \"height\": 1.75, \"weight\": 68, \"number\": 10, \"position\": \"Attacker\", \"photo_url\": \"https://media.api-sports.io/football/players/276.png\"}]")
+            examples = @ExampleObject(value = "[{\"id\": 276, \"name\": \"Neymar\", \"firstName\": \"Neymar\", \"lastName\": \"da Silva Santos Júnior\", \"age\": 34, \"birthdate\": \"1992-02-05\", \"nationality\": \"Brazil\", \"height\": 1.75, \"weight\": 68, \"number\": 10, \"position\": \"Attacker\", \"photoUrl\": \"https://media.api-sports.io/football/players/276.png\"}]")
         )
     )
     @ApiResponse(

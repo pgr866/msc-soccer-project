@@ -86,6 +86,7 @@ services:
     environment:
       CONFIG_SERVER_URL: http://config-server:8888
       EUREKA_SERVER_URL: http://eureka-server:8761/eureka/
+      CORBA_APP_URL: http://corba-app:8084
       SB_DB_HOST: postgresdb
       SB_DB_PORT: 5432
       SB_DB_NAME: postgres
@@ -203,6 +204,7 @@ services:
     environment:
       FIREBASE_AUTH_EMULATOR_HOST: firebase-emulator:9099
       FIRESTORE_EMULATOR_HOST: firebase-emulator:8088
+      CORBA_APP_URL: http://corba-app:8084
       MDB_DB_USER: user
       MDB_DB_PASSWORD: password
       MDB_DB_HOST: mongodb

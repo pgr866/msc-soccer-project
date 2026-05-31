@@ -34,21 +34,21 @@ export class EditPlayerPage implements OnInit {
   private deviceService = inject(DeviceService);
   private toastService = inject(ToastService);
   public playerForm: FormGroup = this.fb.group({
-    name: ['', Validators.required],
-    firstName: [''],
-    lastName: [''],
-    age: [null],
+    name: ['', [Validators.required, Validators.maxLength(100)]],
+    firstName: ['', Validators.maxLength(100)],
+    lastName: ['', Validators.maxLength(100)],
+    age: [null, Validators.min(0)],
     birthdate: [''],
-    nationality: [''],
+    nationality: ['', Validators.maxLength(100)],
     height: [null],
     weight: [null],
-    number: [null],
-    team: [''],
-    league: [''],
-    position: [''],
-    photoUrl: [''],
-    latitude: [0, Validators.required],
-    longitude: [0, Validators.required]
+    number: [null, [Validators.min(0), Validators.max(99)]],
+    team: ['', Validators.maxLength(150)],
+    league: ['', Validators.maxLength(150)],
+    position: ['', Validators.maxLength(50)],
+    photoUrl: ['', Validators.maxLength(255)],
+    latitude: [0, [Validators.required, Validators.min(-90), Validators.max(90)]],
+    longitude: [0, [Validators.required, Validators.min(-180), Validators.max(180)]]
   });
 
   @ViewChild('dateModal') dateModal!: IonModal;

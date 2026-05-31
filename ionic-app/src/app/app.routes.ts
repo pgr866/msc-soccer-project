@@ -49,4 +49,13 @@ export const routes: Routes = [
     canActivate: [authGuard],
     data: { role: 'ADMIN' },
   },
+  {
+    path: 'create-news/:playerName',
+    loadComponent: () =>
+      import('./features/create-news/create-news.page').then(
+        (m) => m.CreateNewsPage
+      ),
+    canActivate: [authGuard],
+    data: { role: 'ADMIN' },
+  },
 ];

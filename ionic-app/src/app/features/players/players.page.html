@@ -25,14 +25,24 @@
         </ion-avatar>
         <ion-label>
           <h2>{{ player.name }}</h2>
+          @if (player.team || player.league) {
           <p>
-            Equipo: {{ player.team }} | Liga: {{ player.league }}
+            {{ player.team ? 'Equipo: ' + player.team : '' }}
+            {{ player.team && player.league ? '|' : '' }}
+            {{ player.league ? 'Liga: ' + player.league : '' }}
           </p>
+          }
+          @if (player.position || player.nationality || player.age) {
           <p>
-            <strong>Posición:</strong> {{ player.position }} |
-            <strong>Nacionalidad:</strong> {{ player.nationality }} |
-            <strong>Edad:</strong> {{ player.age }}
+            @if (player.position) { <strong>Posición:</strong> {{ player.position }} }
+            @if (player.position && (player.nationality || player.age)) { | }
+
+            @if (player.nationality) { <strong>Nacionalidad:</strong> {{ player.nationality }} }
+            @if (player.nationality && player.age) { | }
+
+            @if (player.age) { <strong>Edad:</strong> {{ player.age }} }
           </p>
+          }
         </ion-label>
       </ion-item>
       } @empty {

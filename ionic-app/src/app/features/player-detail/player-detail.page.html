@@ -13,7 +13,7 @@
         <ion-card-title>{{ player.player.name }}</ion-card-title>
         @if (authService.currentUser()?.role === 'ADMIN') {
         <div class="ion-display-flex">
-          <ion-button class="ion-margin-end" [routerLink]="['/create-news', player.player.id]">
+          <ion-button class="ion-margin-end" [routerLink]="['/create-news', player.player.name]">
             <ion-icon class="ion-margin-end" name="newspaper"></ion-icon>Crear Noticia
           </ion-button>
           <ion-button class="ion-margin-end" color="warning" [routerLink]="['/edit-player', player.player.id]">

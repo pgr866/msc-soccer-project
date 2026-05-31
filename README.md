@@ -96,20 +96,22 @@ tabs: noticias    jugadores   equipazos
   lista de equipazos (recientes primero) -> cada ítem despliega la lista de jugadores -> cada jugador con enlace a sus detalles (/player-detail/:id)
 
 /news
-  lista noticias (recientes primero)
-
-/news/:id
   título
   fecha   tags    nombre jugador
   contenido
 
-
 administrador:
 
-/create-news
-  input título
-  input tags    nombre jugador
-  text area contenido
+/create-news/:playerName
+  Jugador Relacionado: playerName
+  input título    input jugador relacionado
+  input descripcion
+  input etiquetas
+  botón publicar noticia
+  
+  Establecer limite de noticias
+  input limite
+  botón limitar
 
 /edit-player
   reutilizar formulario de /create-player pero con datos ya rellenos y botón actualizar
@@ -133,6 +135,10 @@ administrador:
 | DELETE   | /api/comments/:id        | id                           | 204 No Content                     | Admin               |
 | GET      | /api/dream-teams         | -                            | 200 OK [DreamTeamWithPlayers]      | Authenticated/Admin |
 | POST     | /api/dream-teams         | -                            | 201 Created {DreamTeamWithPlayers} | Authenticated/Admin |
+| POST     | /api/corba/send	        | title, player, desc, labels  | 200 OK {message}                   |	Admin               |
+| POST     | /api/corba/read          | -                            | 200 OK {message, news}	            | Authenticated/Admin |
+| POST     | /api/corba/receive       | -	                           | 200 OK {message, news}	            | Authenticated/Admin |
+| POST     | /api/corba/limit         | limit                        | 200 OK {message, limit, current}   |	Admin               |
 
 * Player sin `createdAt`, ya que es generado automáticamente por el servidor.
 
