@@ -11,7 +11,6 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXParseException;
-import ual.dwsc.core.Interest;
 import ual.dwsc.core.News;
 
 /**
@@ -44,8 +43,8 @@ public class XMLDecoder {
 						throw new Exception("titulo es un campo requerido");
 					if (newsElement.getElementsByTagName("descripcion").getLength() != 1)
 						throw new Exception("descripcion es un campo requerido");
-					if (newsElement.getElementsByTagName("interes").getLength() != 1)
-						throw new Exception("interes es un campo requerido");
+					if (newsElement.getElementsByTagName("jugador").getLength() != 1)
+						throw new Exception("jugador es un campo requerido");
 					if (newsElement.getElementsByTagName("etiquetas").getLength() != 1)
 						throw new Exception("etiquetas es un campo requerido");
 
@@ -53,10 +52,7 @@ public class XMLDecoder {
 					String date = newsElement.getElementsByTagName("fecha").item(0).getTextContent();
 					String title = newsElement.getElementsByTagName("titulo").item(0).getTextContent();
 					String description = newsElement.getElementsByTagName("descripcion").item(0).getTextContent();
-
-					// Usamos el metodo fromString del enumerado Interest
-					Interest interest = Interest
-							.fromString(newsElement.getElementsByTagName("interes").item(0).getTextContent());
+					String player = newsElement.getElementsByTagName("jugador").item(0).getTextContent();
 
 					// Extraccion de la lista de etiquetas
 					NodeList labelNodes = newsElement.getElementsByTagName("etiqueta");
@@ -66,7 +62,7 @@ public class XMLDecoder {
 					}
 
 					// Crear objeto News usando el constructor completo de News
-					News news = new News(date, title, description, interest, labels);
+					News news = new News(date, title, description, player, labels);
 					result.add(news);
 				}
 			}

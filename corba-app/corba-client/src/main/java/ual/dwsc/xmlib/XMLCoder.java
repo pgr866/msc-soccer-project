@@ -71,7 +71,7 @@ public class XMLCoder {
 			Element dateNode = document.createElement("fecha");
 			Element titleNode = document.createElement("titulo");
 			Element descriptionNode = document.createElement("descripcion");
-			Element interestNode = document.createElement("interes");
+			Element playerNode = document.createElement("jugador");
 			Element labelsNode = document.createElement("etiquetas");
 
 			News currentNews = news.get(i);
@@ -80,13 +80,13 @@ public class XMLCoder {
 			Text nodeDateValue = document.createTextNode(currentNews.getFecha());
 			Text nodeTitleValue = document.createTextNode(currentNews.getTitulo());
 			Text nodeDescriptionValue = document.createTextNode(currentNews.getDescripcion());
-			Text nodeInterestValue = document.createTextNode(currentNews.getInteres().toString());
+			Text nodePlayerValue = document.createTextNode(currentNews.getJugador());
 
 			// Append de los valores a sus nodos
 			dateNode.appendChild(nodeDateValue);
 			titleNode.appendChild(nodeTitleValue);
 			descriptionNode.appendChild(nodeDescriptionValue);
-			interestNode.appendChild(nodeInterestValue);
+			playerNode.appendChild(nodePlayerValue);
 
 			// Tratamiento de las etiquetas (lista interna)
 			List<String> labelsNews = currentNews.getEtiquetas();
@@ -102,7 +102,7 @@ public class XMLCoder {
 			newsNode.appendChild(dateNode);
 			newsNode.appendChild(titleNode);
 			newsNode.appendChild(descriptionNode);
-			newsNode.appendChild(interestNode);
+			newsNode.appendChild(playerNode);
 			newsNode.appendChild(labelsNode);
 		}
 	}
