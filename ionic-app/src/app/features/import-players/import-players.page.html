@@ -49,13 +49,13 @@
         }
     </ion-list>
 
-    @if (displayLimit < searchImportResults.length) { <ion-button expand="block"
-      class="medium-centered-button ion-margin-top" fill="outline" (click)="displayLimit = displayLimit + 20">
+    @if (displayLimit < searchImportResults.length) { <ion-button
+      class="small-centered-button ion-margin-top" fill="outline" (click)="displayLimit = displayLimit + 20">
       Cargar más jugadores
       </ion-button>
       }
 
-      <ion-button expand="block" class="medium-centered-button ion-margin-top"
+      <ion-button class="small-centered-button ion-margin-top"
         [disabled]="selectedIds.length === 0" (click)="importSelected()">
         Importar {{ selectedIds.length }} seleccionados
       </ion-button>

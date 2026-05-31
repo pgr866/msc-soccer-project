@@ -87,6 +87,7 @@ ion-toolbar {
   --padding-start: 100px;
   --padding-end: 15px;
   --background: linear-gradient(90deg, var(--ion-color-primary-2) 0%, var(--ion-color-primary) 80%);
+
   ion-title {
     font-weight: 700;
   }
@@ -106,6 +107,7 @@ ion-searchbar,
 img {
   --border-radius: 1rem !important;
   border-radius: 1rem !important;
+
   &::part(native) {
     border-radius: 1rem !important;
   }
@@ -131,6 +133,7 @@ ion-card-title {
   .my-custom-toggle::part(track) {
     background-color: color-mix(in srgb, var(--ion-color-primary), white 50%);
   }
+
   ion-toggle::part(handle) {
     background-color: var(--ion-color-primary);
   }
@@ -144,16 +147,29 @@ ion-card-title {
 }
 
 .interactive-map {
+  margin: 0 auto;
   display: block;
-  width: 100%;
+  width: 640px;
   height: 400px;
+}
+
+.gm-svpc {
+  display: none !important;
+}
+
+ion-accordion {
+  background: var(--ion-card-background) !important;
 }
 
 .buttons {
   display: flex;
   gap: 8px;
   align-items: center;
-  ion-button, ion-item, ion-label, ion-toggle {
+
+  ion-button,
+  ion-item,
+  ion-label,
+  ion-toggle {
     height: 40px !important;
   }
 }
@@ -182,7 +198,8 @@ ion-card-title {
 }
 
 .small-centered-button {
-  width: 200px;
+  display: block;
+  width: fit-content;
   margin: 20px auto 0 !important;
 }
 
@@ -212,6 +229,11 @@ ion-card-title {
   padding-bottom: 5px;
 }
 
+.font-size-0-9 {
+  margin-top: 10px !important;
+  font-size: 0.9rem !important;
+}
+
 .font-size-1 {
   font-size: 1rem !important;
 }
@@ -237,7 +259,7 @@ ion-card-title {
 }
 
 .label-margin-top {
-  margin-top: 7px !important;
+  margin-top: 14px !important;
 }
 
 .label-margin-bottom {
@@ -253,6 +275,7 @@ ion-card-title {
   padding: 20px;
   margin-bottom: 20px;
   background: var(--ion-card-background);
+
   img {
     box-shadow: 0 4px 15px var(--ion-text-color);
     height: 350px;
@@ -270,6 +293,7 @@ ion-list,
 ion-input,
 ion-card,
 ion-searchbar,
+capacitor-google-map,
 img {
   --border-radius: 1rem !important;
   border-radius: 1rem !important;
@@ -307,6 +331,7 @@ ion-modal {
   padding: 20px;
   margin-bottom: 20px;
   background: var(--ion-card-background);
+
   img {
     box-shadow: 0 4px 15px var(--ion-text-color);
     height: 350px;
@@ -317,8 +342,3 @@ ion-modal {
   font-size: 1.3rem;
   --ripple-color: transparent;
 }
-
-.font-size-1 {
-  font-size: 1rem !important;
-}
-

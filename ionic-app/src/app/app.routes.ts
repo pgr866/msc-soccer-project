@@ -20,24 +20,32 @@ export const routes: Routes = [
   {
     path: 'player-detail/:playerId',
     loadComponent: () =>
-      import('./features/player-detail/player-detail.page').then((m) => m.PlayerDetailPage),
+      import('./features/player-detail/player-detail.page').then(
+        (m) => m.PlayerDetailPage
+      ),
   },
   {
     path: 'import-players',
     loadComponent: () =>
-      import('./features/import-players/import-players.page').then((m) => m.ImportPlayersPage),
+      import('./features/import-players/import-players.page').then(
+        (m) => m.ImportPlayersPage
+      ),
     canActivate: [authGuard],
   },
   {
     path: 'create-player',
     loadComponent: () =>
-      import('./features/create-player/create-player.page').then((m) => m.CreatePlayerPage),
+      import('./features/create-player/create-player.page').then(
+        (m) => m.CreatePlayerPage
+      ),
     canActivate: [authGuard],
   },
   {
     path: 'edit-player/:playerId',
     loadComponent: () =>
-      import('./features/edit-player/edit-player.page').then((m) => m.EditPlayerPage),
+      import('./features/edit-player/edit-player.page').then(
+        (m) => m.EditPlayerPage
+      ),
     canActivate: [authGuard],
     data: { role: 'ADMIN' },
   },

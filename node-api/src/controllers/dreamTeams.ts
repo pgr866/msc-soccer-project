@@ -56,6 +56,7 @@ export const getAllDreamTeams = async (req: Request & { user?: User }, res: Resp
                 id: dt._id,
                 name: dt.name,
                 userId: dt.userId,
+                createdAt: dt.createdAt,
                 players: playerNames
             };
         }));
@@ -104,7 +105,7 @@ export const createDreamTeamWithAI = async (req: Request & { user?: User }, res:
         const players = await Player.find().limit(50);
         const service = new DreamTeamService(new ChatGroq({
             apiKey: configuration.groq.apiKey,
-            model: 'llama-3.1-8b-instant'
+            model: 'openai/gpt-oss-120b'
         }));
         const savedTeam = await service.generateDreamTeam(players, userId);
         if (!savedTeam.playerIds || savedTeam.playerIds.length === 0) {
@@ -118,6 +119,7 @@ export const createDreamTeamWithAI = async (req: Request & { user?: User }, res:
             id: savedTeam._id,
             name: savedTeam.name,
             userId: savedTeam.userId,
+            createdAt: savedTeam.createdAt,
             players: playerDetails
         });
     } catch (e: unknown) {

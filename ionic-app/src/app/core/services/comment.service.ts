@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable, computed } from '@angular/core';
 import { BackendConfigService } from './backend-config.service';
-import { CommentRequest } from '../models/comment-request';
+import { CreateCommentDto } from '../models/comment.model';
 
 @Injectable({ providedIn: 'root' })
 export class CommentService {
@@ -9,7 +9,7 @@ export class CommentService {
     private config = inject(BackendConfigService);
     private apiBase = computed(() => this.config.getBaseApi('comment'));
 
-    addComment(id: string, comment: CommentRequest) {
+    addComment(id: string, comment: CreateCommentDto) {
         return this.http.post(`${this.apiBase()}/comments/player/${id}`, comment);
     }
 

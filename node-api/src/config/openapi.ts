@@ -180,6 +180,7 @@ const swaggerOptions: Options = {
                         id: { type: 'string' },
                         name: { type: 'string' },
                         userId: { type: 'string' },
+                        createdAt: { type: 'string', format: 'date-time' },
                         players: { 
                             type: 'array', 
                             items: { $ref: '#/components/schemas/PlayerName' } 
@@ -189,6 +190,7 @@ const swaggerOptions: Options = {
                         id: "1",
                         name: "Champions XI",
                         userId: "user_123",
+                        createdAt: "2026-05-27T12:00:00Z",
                         players: [
                             { id: "1", name: "Neymar" },
                             { id: "4", name: "Cristiano Ronaldo" }

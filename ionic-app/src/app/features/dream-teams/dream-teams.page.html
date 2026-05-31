@@ -1,0 +1,35 @@
+<app-generic-header title="Generar Equipazo con IA" [favIcon]="true"></app-generic-header>
+
+<ion-content>
+  <div class="centered-content">
+    <ion-button class="medium-centered-button ion-padding-vertical" expand="block" (click)="generate()">
+      <ion-icon class="ion-margin-end" name="sparkles-outline"></ion-icon>Generar Equipazo con IA
+    </ion-button>
+
+    @if (teams().length > 0) {
+    <ion-card>
+      <ion-accordion-group>
+        @for (team of teams(); track team.id) {
+        <ion-accordion [value]="team.id">
+          <ion-item slot="header">
+            <ion-label class="ion-padding-vertical">{{ team.name }}</ion-label>
+            <ion-note class="ion-padding-end font-size-0-9" slot="end" color="medium">{{ team.createdAt | date:'dd/MM/yy
+              HH:mm' }}</ion-note>
+          </ion-item>
+          <ion-list class="ion-padding-start ion-margin-start ion-margin-bottom" slot="content">
+            @for (player of team.players; track player.id) {
+            <ion-item class="ion-padding-start" [routerLink]="['/player-detail', player.id]">
+              <ion-label>{{ player.name }}</ion-label>
+            </ion-item>
+            }
+          </ion-list>
+        </ion-accordion>
+        }
+      </ion-accordion-group>
+    </ion-card>
+    } @else {
+    <ion-item class="ion-margin-top" lines="none">Aún no hay equipos para mostrar.</ion-item>
+    }
+  </div>
+  <div class="ion-padding"></div>
+</ion-content>

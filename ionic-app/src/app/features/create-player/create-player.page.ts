@@ -10,7 +10,7 @@ import { GenericHeaderComponent } from '@/app/shared/components/generic-header/g
 import { DeviceService } from '@/app/core/services/device.service';
 import { ToastService } from '@/app/core/services/toast.service';
 import { addIcons } from 'ionicons';
-import { camera, locate, calendar } from 'ionicons/icons';
+import { camera, locate, calendar, save } from 'ionicons/icons';
 import { PlayerService } from '@/app/core/services/player.service';
 import { AlertService } from '@/app/core/services/alert.service';
 
@@ -55,7 +55,7 @@ export class CreatePlayerPage implements OnInit {
   newMap!: GoogleMap;
   private markerId: string | null = null;
 
-  constructor() { addIcons({ camera, locate, calendar }); }
+  constructor() { addIcons({ camera, locate, calendar, save }); }
 
   ngOnInit() {
     this.resetLocation();

@@ -66,10 +66,10 @@
       </ion-list>
 
       <h3 class="subtitle ion-padding-top">Ubicación de registro</h3>
-      <div class="map-container ion-margin-vertical">
+      <div class="ion-margin-top">
         <img
-          [src]="'https://maps.googleapis.com/maps/api/staticmap?center=' + player.player.latitude + ',' + player.player.longitude + '&zoom=5&size=400x250&markers=color:red%7C' + player.player.latitude + ',' + player.player.longitude + '&key=AIzaSyAox2bEMtyviZG9-naimV5hrGFV3iCCdJU'" />
-        <p class="ion-text-center">Lat: {{ player.player.latitude }}, Long: {{ player.player.longitude }}</p>
+          [src]="'https://maps.googleapis.com/maps/api/staticmap?center=' + player.player.latitude + ',' + player.player.longitude + '&zoom=5&size=640x400&markers=color:red%7C' + player.player.latitude + ',' + player.player.longitude + '&key=AIzaSyAox2bEMtyviZG9-naimV5hrGFV3iCCdJU'" />
+        <p class="ion-text-center label-margin-top">Lat: {{ player.player.latitude }}, Long: {{ player.player.longitude }}</p>
       </div>
 
       <h3 class="subtitle">Comentarios</h3>

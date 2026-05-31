@@ -18,12 +18,12 @@ export const routes: Routes = [
         loadComponent: () =>
           import('../players/players.page').then((m) => m.PlayersPage),
       },
-      // {
-      //   path: 'dream-team',
-      //   loadComponent: () =>
-      //     import('../dream-team/dream-team.page').then((m) => m.DreamTeamPage),
-      //   canActivate: [authGuard],
-      // },
+      {
+        path: 'dream-teams',
+        loadComponent: () =>
+          import('../dream-teams/dream-teams.page').then((m) => m.DreamTeamsPage),
+        canActivate: [authGuard],
+      },
     ],
   },
   {
