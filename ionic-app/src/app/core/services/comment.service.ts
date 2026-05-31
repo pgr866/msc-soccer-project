@@ -7,7 +7,7 @@ import { CommentRequest } from '../models/comment-request';
 export class CommentService {
     private http = inject(HttpClient);
     private config = inject(BackendConfigService);
-    private apiBase = computed(() => this.config.getBaseApi('player'));
+    private apiBase = computed(() => this.config.getBaseApi('comment'));
 
     addComment(id: string, comment: CommentRequest) {
         return this.http.post(`${this.apiBase()}/comments/player/${id}`, comment);

@@ -1,6 +1,6 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Injectable, signal, computed } from '@angular/core';
-import { tap, switchMap } from 'rxjs';
+import { tap, switchMap, forkJoin } from 'rxjs';
 import { Player } from '@/app/core/models/player.model';
 import { PlayerDetail } from '@/app/core/models/comment.model';
 import { BackendConfigService } from './backend-config.service';
@@ -45,6 +45,17 @@ export class PlayerService {
   createPlayer(playerData: Player) {
     return this.http.post<Player>(`${this.apiBase()}/players`, playerData).pipe(
       switchMap(() => this.getPlayers())
+    );
+  }
+
+  updatePlayer(id: string, playerData: Player) {
+    return this.http.put<Player>(`${this.apiBase()}/players/${id}`, playerData).pipe(
+      switchMap(() => {
+        return forkJoin([
+          this.getPlayerDetail(id),
+          this.getPlayers()
+        ]);
+      })
     );
   }
 
