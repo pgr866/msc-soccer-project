@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html dir="ltr" lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <title>App Jugadores</title>
+  <script type="module" src="/build/stencil-app.esm.js"></script>
+</head>
+
+<body>
+
+  <players-list id="lista"></players-list>
+  <player-detail id="detalle"></player-detail>
+
+  <script>
+    const lista = document.getElementById('lista');
+    const detalle = document.getElementById('detalle');
+
+    fetch('http://localhost:3000/api/players')
+      .then(res => res.json())
+      .then(data => lista.players = data);
+
+    lista.addEventListener('playerSelected', (event) => {
+      fetch(`http://localhost:3000/api/players/${event.detail}`)
+        .then(res => res.json())
+        .then(data => {
+          detalle.playerDetail = data;
+          lista.style.display = 'none';
+          detalle.style.display = 'block';
+        });
+    });
+
+    detalle.addEventListener('closeDetail', () => {
+      lista.style.display = 'block';
+      detalle.style.display = 'none';
+    });
+  </script>
+</body>
+
+</html>

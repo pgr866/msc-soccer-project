@@ -37,9 +37,12 @@ app.use(logger('dev'));
 
 const allowedOrigin = process.env.IONIC_APP_URL || 'http://localhost:8100';
 
+const whitelist = [allowedOrigin];
+if (process.env.NODE_ENV !== 'production') whitelist.push('http://localhost:3333');
+
 app.use(cors({
   origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
-    if (!origin || origin === allowedOrigin) {
+    if (!origin || whitelist.includes(origin)) {
       callback(null, true);
     } else {
       callback(null, false);
