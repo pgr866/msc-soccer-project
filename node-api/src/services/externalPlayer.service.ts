@@ -4,7 +4,7 @@ import Player from '../models/players.js';
 const FOOTBALL_API_KEY = process.env.FOOTBALL_API_KEY;
 const BASE_URL = 'https://v3.football.api-sports.io';
 
-const apiClient = axios.create({
+export const apiClient = axios.create({
     baseURL: BASE_URL,
     headers: { 'x-rapidapi-key': FOOTBALL_API_KEY as string }
 });

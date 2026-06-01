@@ -49,9 +49,6 @@ jobs:
 
       - name: Run tests
         working-directory: node-api
-        env:
-          FOOTBALL_API_KEY: ${{ secrets.FOOTBALL_API_KEY }}
-          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
         run: npm test
 
       - name: Upload Test & Linting Results
