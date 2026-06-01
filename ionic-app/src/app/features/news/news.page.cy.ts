@@ -28,6 +28,8 @@ describe('NewsPage', () => {
                 { provide: AlertService, useValue: {} },
                 { provide: AuthService, useValue: authMock }
             ]
+        }).then(({ component }) => {
+            component.ionViewWillEnter(); 
         });
 
         cy.contains('Noticia de prueba').should('be.visible');
@@ -46,6 +48,8 @@ describe('NewsPage', () => {
                 { provide: AlertService, useValue: {} },
                 { provide: AuthService, useValue: authMock }
             ]
+        }).then(({ component }) => {
+            component.ionViewWillEnter(); 
         });
 
         cy.contains('No hay noticias pendientes en el buffer').should('be.visible');
@@ -65,6 +69,8 @@ describe('NewsPage', () => {
                 { provide: AlertService, useValue: { showConfirmation: cy.stub().resolves(true) } },
                 { provide: AuthService, useValue: authMock }
             ]
+        }).then(({ component }) => {
+            component.ionViewWillEnter(); 
         });
 
         cy.get('ion-button').contains('Consumir Noticia').click({ force: true });

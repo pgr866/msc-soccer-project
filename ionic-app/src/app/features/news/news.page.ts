@@ -1,5 +1,5 @@
-import { Component, inject, OnInit } from '@angular/core';
-import { IonContent, IonCard, IonCardHeader, IonCardTitle, IonCardContent, IonItem, IonIcon, IonLabel, IonButton, IonText } from '@ionic/angular/standalone';
+import { Component, inject } from '@angular/core';
+import { IonContent, IonCard, IonCardHeader, IonCardTitle, IonCardContent, IonItem, IonIcon, IonLabel, IonButton, IonText, ViewWillEnter } from '@ionic/angular/standalone';
 import { cloudDownloadOutline } from 'ionicons/icons';
 import { addIcons } from 'ionicons';
 import { GenericHeaderComponent } from '@/app/shared/components/generic-header/generic-header.component';
@@ -16,7 +16,7 @@ import { AlertService } from '@/app/core/services/alert.service';
     IonItem, IonIcon, IonLabel, IonButton, IonText, GenericHeaderComponent
   ]
 })
-export class NewsPage implements OnInit {
+export class NewsPage implements ViewWillEnter {
   private newsService = inject(NewsService);
   private toastService = inject(ToastService);
   private alertService = inject(AlertService);
@@ -27,7 +27,7 @@ export class NewsPage implements OnInit {
     addIcons({ cloudDownloadOutline });
   }
 
-  ngOnInit() {
+  ionViewWillEnter() {
     this.loadNews();
   }
 

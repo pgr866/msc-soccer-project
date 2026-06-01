@@ -13,9 +13,11 @@ import { swaggerDocs } from './src/config/openapi.js';
 import apiRouter from './src/routes/index.js';
 import { connectDB } from './src/config/db.js';
 
-if (process.env.NODE_ENV === 'production') {
+const isProd = process.env.NODE_ENV === 'production';
+
+if (isProd) {
   if (!process.env.FIREBASE_SERVICE_ACCOUNT_B64) {
-      throw new Error("FIREBASE_SERVICE_ACCOUNT_B64 environment variable is missing.");
+    throw new Error("FIREBASE_SERVICE_ACCOUNT_B64 environment variable is missing.");
   }
   const decodedJsonString = Buffer.from(process.env.FIREBASE_SERVICE_ACCOUNT_B64, 'base64').toString('utf8');
   const serviceAccount = JSON.parse(decodedJsonString);
@@ -35,17 +37,19 @@ const app = express();
 app.use(helmet());
 app.use(logger('dev'));
 
-const allowedOrigin = process.env.IONIC_APP_URL || 'http://localhost:8100';
-
-const whitelist = [allowedOrigin];
-if (process.env.NODE_ENV !== 'production') whitelist.push('http://localhost:3333');
+const allowedOrigin = process.env.IONIC_APP_URL || '';
 
 app.use(cors({
   origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
-    if (!origin || whitelist.includes(origin)) {
-      callback(null, true);
+    if (!origin) return callback(null, true);
+    if (isProd) {
+      if (origin === allowedOrigin) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
     } else {
-      callback(null, false);
+      callback(null, true);
     }
   },
   credentials: true,
@@ -78,12 +82,12 @@ if (process.env.NODE_ENV === 'development') {
 }
 
 // catch 404 and forward to error handler
-app.use(function(req: Request, res: Response, next: NextFunction) {
+app.use(function (req: Request, res: Response, next: NextFunction) {
   next(createError(404));
 });
 
 // error handler
-app.use(function(err: HttpError, req: Request, res: Response, next: NextFunction) {
+app.use(function (err: HttpError, req: Request, res: Response, next: NextFunction) {
   res.status(err.status || 500);
   res.json({
     message: err.message,

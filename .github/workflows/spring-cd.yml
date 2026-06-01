@@ -232,6 +232,7 @@ jobs:
             CONFIG_SERVER_URL=https://config-server-${{ env.GCP_PROJECT_NUMBER }}.${{ env.REGION }}.run.app
             EUREKA_SERVER_URL=https://eureka-server-${{ env.GCP_PROJECT_NUMBER }}.${{ env.REGION }}.run.app/eureka/
             CORBA_APP_URL=https://corba-app-${{ env.GCP_PROJECT_NUMBER }}.${{ env.REGION }}.run.app
+            COMMENT_SERVICE_URL=https://comment-service-${{ env.GCP_PROJECT_NUMBER }}.${{ env.REGION }}.run.app
             SB_DB_HOST=${{ env.SB_DB_HOST }}
             SB_DB_PORT=${{ env.SB_DB_PORT }}
             SB_DB_NAME=${{ env.SB_DB_NAME }}
@@ -280,6 +281,7 @@ jobs:
             REGION=${{ env.REGION }}
             CONFIG_SERVER_URL=https://config-server-${{ env.GCP_PROJECT_NUMBER }}.${{ env.REGION }}.run.app
             EUREKA_SERVER_URL=https://eureka-server-${{ env.GCP_PROJECT_NUMBER }}.${{ env.REGION }}.run.app/eureka/
+            PLAYER_SERVICE_URL=https://player-service-${{ env.GCP_PROJECT_NUMBER }}.${{ env.REGION }}.run.app
             SB_DB_HOST=${{ env.SB_DB_HOST }}
             SB_DB_PORT=${{ env.SB_DB_PORT }}
             SB_DB_NAME=${{ env.SB_DB_NAME }}
@@ -327,6 +329,7 @@ jobs:
             REGION=${{ env.REGION }}
             CONFIG_SERVER_URL=https://config-server-${{ env.GCP_PROJECT_NUMBER }}.${{ env.REGION }}.run.app
             EUREKA_SERVER_URL=https://eureka-server-${{ env.GCP_PROJECT_NUMBER }}.${{ env.REGION }}.run.app/eureka/
+            PLAYER_SERVICE_URL=https://player-service-${{ env.GCP_PROJECT_NUMBER }}.${{ env.REGION }}.run.app
             SB_DB_HOST=${{ env.SB_DB_HOST }}
             SB_DB_PORT=${{ env.SB_DB_PORT }}
             SB_DB_NAME=${{ env.SB_DB_NAME }}

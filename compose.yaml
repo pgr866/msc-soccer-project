@@ -87,6 +87,7 @@ services:
       CONFIG_SERVER_URL: http://config-server:8888
       EUREKA_SERVER_URL: http://eureka-server:8761/eureka/
       CORBA_APP_URL: http://corba-app:8084
+      COMMENT_SERVICE_URL: http://comment-service:8082
       SB_DB_HOST: postgresdb
       SB_DB_PORT: 5432
       SB_DB_NAME: postgres
@@ -117,6 +118,7 @@ services:
     environment:
       CONFIG_SERVER_URL: http://config-server:8888
       EUREKA_SERVER_URL: http://eureka-server:8761/eureka/
+      PLAYER_SERVICE_URL: http://player-service:8081
       SB_DB_HOST: postgresdb
       SB_DB_PORT: 5432
       SB_DB_NAME: postgres
@@ -144,6 +146,7 @@ services:
     environment:
       CONFIG_SERVER_URL: http://config-server:8888
       EUREKA_SERVER_URL: http://eureka-server:8761/eureka/
+      PLAYER_SERVICE_URL: http://player-service:8081
       SB_DB_HOST: postgresdb
       SB_DB_PORT: 5432
       SB_DB_NAME: postgres
@@ -165,7 +168,6 @@ services:
 
   corba-app:
     build: corba-app
-    container_name: corba-app
     restart: always
     ports:
       - "8084:8084"
@@ -237,19 +239,32 @@ services:
       firebase-emulator:
         condition: service_healthy
 
-  # cypress:
-  #   image: cypress/included:15.15.0
-  #   network_mode: "host"
-  #   environment:
-  #     - DISPLAY=$DISPLAY
-  #     - XDG_RUNTIME_DIR=$XDG_RUNTIME_DIR
-  #     - ELECTRON_OZONE_PLATFORM_HINT=wayland
-  #   volumes:
-  #     - ./ionic-app:/app
-  #     - ionic-cache:/app/node_modules
-  #     - $XDG_RUNTIME_DIR/$WAYLAND_DISPLAY:$XDG_RUNTIME_DIR/$WAYLAND_DISPLAY
-  #   working_dir: /app
-  #   entrypoint: npx cypress open --project .
+  cypress:
+    image: cypress/included:15.15.0
+    network_mode: "host"
+    environment:
+      - DISPLAY=$DISPLAY
+      - XDG_RUNTIME_DIR=$XDG_RUNTIME_DIR
+      - ELECTRON_OZONE_PLATFORM_HINT=wayland
+    volumes:
+      - ./ionic-app:/app
+      - ionic-cache:/app/node_modules
+      - $XDG_RUNTIME_DIR/$WAYLAND_DISPLAY:$XDG_RUNTIME_DIR/$WAYLAND_DISPLAY
+    working_dir: /app
+    entrypoint: npx cypress open --project .
+
+  stencil-app:
+    build: stencil-app
+    volumes:
+      - ./stencil-app:/app
+      - stencil-cache:/app/node_modules
+    ports:
+      - "3333:3333"
+    depends_on:
+      gateway:
+        condition: service_healthy
+      player-service:
+        condition: service_healthy
 
 volumes:
   postgres_data:
@@ -257,3 +272,4 @@ volumes:
   node-cache:
   ionic-cache:
   angular-cache:
+  stencil-cache:
