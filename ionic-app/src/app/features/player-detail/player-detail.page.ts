@@ -67,7 +67,7 @@ export class PlayerDetailPage implements OnInit {
       this.playerService.deletePlayer(this.playerId).subscribe({
         next: () => {
           this.toastService.showToast('Jugador eliminado correctamente', 'success');
-          this.navCtrl.back();
+          this.navCtrl.navigateForward('/players');
         },
         error: () => this.toastService.showToast('Error al eliminar el jugador', 'error')
       });
